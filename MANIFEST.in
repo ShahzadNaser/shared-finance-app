@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include shared_finance_app *.css
+recursive-include shared_finance_app *.csv
+recursive-include shared_finance_app *.html
+recursive-include shared_finance_app *.ico
+recursive-include shared_finance_app *.js
+recursive-include shared_finance_app *.json
+recursive-include shared_finance_app *.md
+recursive-include shared_finance_app *.png
+recursive-include shared_finance_app *.py
+recursive-include shared_finance_app *.svg
+recursive-include shared_finance_app *.txt
+recursive-exclude shared_finance_app *.pyc
