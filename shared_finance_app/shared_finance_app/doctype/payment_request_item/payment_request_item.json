@@ -1,0 +1,128 @@
+{
+ "creation": "2021-08-26 17:07:34.923501",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "account",
+  "party_type",
+  "party",
+  "amount",
+  "less_advance_paid",
+  "now_being_request",
+  "column_break_6",
+  "balance_payable",
+  "amended_from",
+  "finance_book",
+  "cost_center",
+  "remarks",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Account",
+   "options": "Account"
+  },
+  {
+   "columns": 1,
+   "fieldname": "party_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Party Type",
+   "options": "DocType"
+  },
+  {
+   "columns": 1,
+   "fieldname": "party",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Party",
+   "options": "party_type"
+  },
+  {
+   "columns": 1,
+   "description": "Amount in customer's currency",
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total Amount",
+   "options": "currency"
+  },
+  {
+   "fieldname": "less_advance_paid",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Less Advance Paid",
+   "options": "currency"
+  },
+  {
+   "fieldname": "now_being_request",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Now Being Request",
+   "options": "currency"
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "balance_payable",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Balance Payable",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Payment Request Item",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "finance_book",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Finance Book",
+   "options": "Finance Book"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Cost Center",
+   "options": "Cost Center"
+  },
+  {
+   "default": " -",
+   "fieldname": "remarks",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Description"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "in_list_view": 1,
+   "label": "Description"
+  }
+ ],
+ "is_submittable": 1,
+ "istable": 1,
+ "modified": "2022-08-29 10:59:44.535502",
+ "modified_by": "Administrator",
+ "module": "Shared Finance App",
+ "name": "Payment Request Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}
