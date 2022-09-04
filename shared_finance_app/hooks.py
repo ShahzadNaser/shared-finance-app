@@ -87,9 +87,9 @@ doc_events = {
 }
 
 
-override_doctype_class = {
-'Payment Request': 'shared_finance_app.overrides_class.payment_request.CustomPaymentRequest',
-}
+# override_doctype_class = {
+# 'Payment Request': 'shared_finance_app.overrides_class.payment_request.CustomPaymentRequest',
+# }
 
 override_doctype_dashboards = {
 	"Payment Request": "shared_finance_app.dashboard.payment_request_dashboard.get_data"
