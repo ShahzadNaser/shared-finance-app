@@ -35,6 +35,9 @@ class CustomPaymentRequest(PaymentRequest):
 
 		if self.pay_to_party == 1 and (not self.reference_doctype or not self.reference_name) and len(self.payment_request_reference) == 0:
 			frappe.throw(_("To create a Payment Request reference document is required"))
+		if self.pay_to_party==0 and len(self.payment_request_item)==0 :
+			frappe.throw(_("To create a Payment Request reference payment request items is required"))
+
 
 		# if self.pay_to_party == 1 and (not self.reference_doctype or not self.reference_name):
 		# 	frappe.throw(_("To create a Payment Request reference document is required"))
