@@ -180,6 +180,7 @@ def make_journal_voucher(pr_name, doc=None, show_msg=True):
 		frappe.throw("Please insert Default account for Mode Of Payment")
 
 	je.append("accounts", {
+
 		'account': default_account,
 		'cost_center': doc.cost_center,
 		'finance_book': doc.finance_book,
