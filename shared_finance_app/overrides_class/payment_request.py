@@ -36,6 +36,7 @@ class CustomPaymentRequest(PaymentRequest):
 
 		if self.pay_to_party == 1 and (not self.reference_doctype or not self.reference_name) and len(self.payment_request_reference) == 0:
 			frappe.throw(_("To create a Payment Request reference document is required"))
+
 		if self.pay_to_party==0 and len(self.payment_request_item)==0 :
 			frappe.throw(_("To create a Payment Request reference payment request items is required"))
 
@@ -136,6 +137,8 @@ def make_journal_voucher(pr_name, doc=None, show_msg=True):
 
 	dimensions = get_accounting_dimensions()
 	for acc in doc.payment_request_item:
+		# if not( acc.account or  acc.party):
+		# 	frappe.throw("Please Insert Party or Account in Payment request items table")
 		if acc.account:
 
 			total_debit = acc.now_being_request
@@ -172,9 +175,12 @@ def make_journal_voucher(pr_name, doc=None, show_msg=True):
 			je.append("accounts", temp_dict)
 
 
+	default_account=frappe.db.get_value("Mode of Payment Account",{"parent": doc.mode_of_payment, "company": company}, "default_account")
+	if not default_account:
+		frappe.throw("Please insert Default account for Mode Of Payment")
+
 	je.append("accounts", {
-		'account': frappe.db.get_value("Mode of Payment Account",
-				{"parent": doc.mode_of_payment, "company": company}, "default_account"),
+		'account': default_account,
 		'cost_center': doc.cost_center,
 		'finance_book': doc.finance_book,
 		'reference_name': doc.name,
