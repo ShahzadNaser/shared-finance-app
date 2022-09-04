@@ -36,6 +36,7 @@ class CustomPaymentRequest(PaymentRequest):
 
 		if self.pay_to_party == 1 and (not self.reference_doctype or not self.reference_name) and len(self.payment_request_reference) == 0:
 			frappe.throw(_("To create a Payment Request reference document is required"))
+
 		if self.pay_to_party==0 and len(self.payment_request_item)==0 :
 			frappe.throw(_("To create a Payment Request reference payment request items is required"))
 
@@ -136,6 +137,8 @@ def make_journal_voucher(pr_name, doc=None, show_msg=True):
 
 	dimensions = get_accounting_dimensions()
 	for acc in doc.payment_request_item:
+		if not( acc.account or  acc.party):
+			frappe.throw("Please Insert Party or Account in Payment request items table")
 		if acc.account:
 
 			total_debit = acc.now_being_request
