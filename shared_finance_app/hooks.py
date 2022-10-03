@@ -27,7 +27,7 @@ app_license = "MIT"
 
 # include js in doctype views
 doctype_js = {"Payment Request": "public/js/payment_request.js"}
-doctype_list_js = { "Payment Request" : "public/js/payment_request_list.js"}
+doctype_list_js = {"Payment Request": "public/js/payment_request_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
@@ -80,22 +80,20 @@ doctype_list_js = { "Payment Request" : "public/js/payment_request_list.js"}
 # Hook on document methods and events
 
 doc_events = {
-"Payment Request": {
-		"on_submit": "shared_finance_app.overrides_class.payment_request.on_submit_via_hooks",
-		"on_cancel": "shared_finance_app.overrides_class.payment_request.on_cancel",
-	}
+    "Payment Request": {
+        "on_submit": "shared_finance_app.overrides_class.payment_request.on_submit_via_hooks",
+        "on_cancel": "shared_finance_app.overrides_class.payment_request.on_cancel",
+    }
 }
 
-
 override_doctype_class = {
-'Payment Request': 'shared_finance_app.overrides_class.payment_request.CustomPaymentRequest',
+    'Payment Request': 'shared_finance_app.overrides_class.payment_request.CustomPaymentRequest'
 }
 
 override_doctype_dashboards = {
-	"Payment Request": "shared_finance_app.dashboard.payment_request_dashboard.get_data"
+    "Payment Request": "shared_finance_app.dashboard.payment_request_dashboard.get_data"
 
 }
-
 
 # Scheduled Tasks
 # ---------------
@@ -136,4 +134,3 @@ override_doctype_dashboards = {
 # override_doctype_dashboards = {
 # 	"Task": "shared_finance_app.task.get_dashboard_data"
 # }
-
