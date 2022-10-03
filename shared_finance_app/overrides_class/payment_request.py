@@ -11,6 +11,8 @@ from erpnext.accounts.doctype.journal_entry.journal_entry import get_default_ban
 from erpnext.accounts.doctype.bank_account.bank_account import get_party_bank_account
 from erpnext.accounts.doctype.invoice_discounting.invoice_discounting import get_party_account_based_on_invoice_discounting
 from erpnext.accounts.doctype.payment_entry.payment_entry import get_reference_as_per_payment_terms
+from frappe.integrations.utils import get_payment_gateway_controller
+
 
 class CustomPaymentRequest(PaymentRequest):
 	def before_save(self, *args, **kwargs):
@@ -29,7 +31,6 @@ class CustomPaymentRequest(PaymentRequest):
 			self.grand_total += row.amount or 0
 			self.total_of_advance_paid += row.less_advance_paid or 0
 			self.total_now_being_requested += row.now_being_request or 0
-
 
 	def validate_reference_document(self):
 
@@ -78,6 +79,33 @@ class CustomPaymentRequest(PaymentRequest):
 				self.set_payment_request_url()
 				self.send_email()
 				self.make_communication_entry()
+
+	def get_payment_url(self):
+		if self.reference_doctype != "Fees":
+			data = frappe.db.get_value(self.reference_doctype, self.reference_name, ["company", "customer_name"], as_dict=1)
+		else:
+			data = frappe.db.get_value(self.reference_doctype, self.reference_name, ["student_name"], as_dict=1)
+			data.update({"company": frappe.defaults.get_defaults().company})
+
+		controller = get_payment_gateway_controller(self.payment_gateway)
+		controller.validate_transaction_currency(self.currency)
+
+		if hasattr(controller, 'validate_minimum_transaction_amount'):
+			controller.validate_minimum_transaction_amount(self.currency, self.grand_total)
+
+		return controller.get_payment_url(**{
+			"amount": flt(self.grand_total * self.conversion_rate,self.precision("grand_total")),
+			"title": frappe.as_unicode(data.company),
+			"description": frappe.as_unicode(self.subject),
+			"reference_doctype": "Payment Request",
+			"reference_docname": self.name,
+			"payer_email": self.email_to or frappe.session.user,
+			"payer_name": frappe.as_unicode(data.customer_name),
+			"order_id": self.name,
+			"currency": self.currency
+		})
+
+
 
 
 def on_submit_via_hooks(self, method):
