@@ -1,0 +1,84 @@
+{
+ "allow_import": 1,
+ "autoname": "field:nationality",
+ "creation": "2020-12-16 17:43:59.276516",
+ "doctype": "DocType",
+ "document_type": "Setup",
+ "engine": "InnoDB",
+ "field_order": [
+  "nationality",
+  "nationality_arabic",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "nationality",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Nationality",
+   "oldfieldname": "designation_name",
+   "oldfieldtype": "Data",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "nationality_arabic",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Nationality Arabic"
+  }
+ ],
+ "icon": "fa fa-bookmark",
+ "modified": "2021-11-16 12:39:10.621305",
+ "modified_by": "Administrator",
+ "module": "Shared Finance App",
+ "name": "Nationality",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "search_fields": "nationality",
+ "show_name_in_global_search": 1,
+ "sort_field": "modified",
+ "sort_order": "ASC",
+ "title_field": "nationality"
+}
