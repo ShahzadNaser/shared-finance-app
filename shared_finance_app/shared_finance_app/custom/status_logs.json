@@ -1,0 +1,41 @@
+{
+ "custom_fields": [],
+ "custom_perms": [
+  {
+   "_assign": null,
+   "_comments": null,
+   "_liked_by": null,
+   "_user_tags": null,
+   "amend": 0,
+   "cancel": 0,
+   "create": 1,
+   "creation": "2022-01-12 11:34:12.789192",
+   "delete": 1,
+   "docstatus": 0,
+   "email": 1,
+   "export": 1,
+   "idx": 1,
+   "if_owner": 0,
+   "import": 0,
+   "modified": "2022-10-11 09:42:52.716701",
+   "modified_by": "waad.i@jawahr.com",
+   "name": "9f256411ef",
+   "owner": "Administrator",
+   "parent": "Status Logs",
+   "parentfield": "permissions",
+   "parenttype": "DocType",
+   "permlevel": 0,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "set_user_permissions": 0,
+   "share": 1,
+   "submit": 0,
+   "write": 1
+  }
+ ],
+ "doctype": "Status Logs",
+ "property_setters": [],
+ "sync_on_migrate": 1
+}
