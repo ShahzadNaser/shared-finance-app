@@ -1,0 +1,552 @@
+{
+ "autoname": "ARR-.#####",
+ "creation": "2021-10-21 15:26:54.326924",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "recruitment_details_section",
+  "status",
+  "notes",
+  "sector",
+  "border_no",
+  "border_entry_date",
+  "border_exit_date",
+  "sponser_id",
+  "passport_no",
+  "passport_expiry_date",
+  "employee_number",
+  "employee_name",
+  "visa_block_no",
+  "visa_category",
+  "nationality",
+  "visa_date",
+  "visa_number",
+  "visa_issuing_authority",
+  "gender",
+  "finance_book",
+  "holiday_list",
+  "column_break_7",
+  "posting_date",
+  "company",
+  "non_arrival_updated_date",
+  "new_arrival_updated_date",
+  "border_number_updated_date",
+  "iqama_updated_date",
+  "date_of_arrival",
+  "arrival_port",
+  "agency",
+  "client",
+  "client_name",
+  "contract",
+  "employee_contract",
+  "sales_order",
+  "location_branch",
+  "camp_location",
+  "project_name",
+  "employment_contract_status",
+  "date_of_birth",
+  "flight_details",
+  "section_break_13",
+  "salary",
+  "border_details_section",
+  "column_break_16",
+  "iqama_section_section",
+  "iqama_number",
+  "muqeem_status",
+  "iqama_issue_date",
+  "column_break_35",
+  "iqama_profession",
+  "profession_status",
+  "iqama_expiry_date",
+  "iqama_issue",
+  "operation_details_section",
+  "vehicle_details_section",
+  "external_service",
+  "vehicle",
+  "driver",
+  "amended_from",
+  "section_break_32",
+  "new_arrival_document",
+  "section_break_39",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "recruitment_details_section",
+   "fieldtype": "Section Break",
+   "label": "Recruitment Details"
+  },
+  {
+   "fieldname": "visa_category",
+   "fieldtype": "Link",
+   "label": "Visa Category",
+   "options": "Visa Category",
+   "reqd": 1
+  },
+  {
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Employee Name"
+  },
+  {
+   "fieldname": "nationality",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Nationality",
+   "options": "Nationality",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "client",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Client ID",
+   "options": "Customer"
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "client.customer_f_name",
+   "fieldname": "client_name",
+   "fieldtype": "Read Only",
+   "label": "Client Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date_of_arrival",
+   "fieldtype": "Date",
+   "in_standard_filter": 1,
+   "label": "Date of Travel"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "operation_details_section",
+   "fieldtype": "Section Break",
+   "label": "Operation Details"
+  },
+  {
+   "fieldname": "border_no",
+   "fieldtype": "Data",
+   "label": "Border Number"
+  },
+  {
+   "fieldname": "iqama_profession",
+   "fieldtype": "Data",
+   "label": "Iqama Profession"
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "border_entry_date",
+   "fieldtype": "Date",
+   "label": "Border Entry Date"
+  },
+  {
+   "fieldname": "border_exit_date",
+   "fieldtype": "Date",
+   "label": "Border Exit Date"
+  },
+  {
+   "fieldname": "iqama_section_section",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "label": "IQAMA Details"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "\nReady To Travel\nBorder Number Updated\nNon-Arrival\nNew-Arrival\nRunaway Employee\nArrived and returned back to country from Airport\nReport collection from emigration dept\nCollection of arrival doc. and upload in to the system\nIssue SIM card and update the Mobile number in system\nIQAMA Medical Updates\nTawakalna updates",
+   "reqd": 1
+  },
+  {
+   "fieldname": "salary",
+   "fieldtype": "Table",
+   "label": "Salary Details",
+   "options": "Salary Detail"
+  },
+  {
+   "fieldname": "passport_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Passport No"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "agency",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Agency",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "section_break_13",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "New Arrival",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "arrival_port",
+   "fieldtype": "Data",
+   "label": "Arrival Port"
+  },
+  {
+   "fieldname": "employment_contract_status",
+   "fieldtype": "Data",
+   "label": "Employment Contract Status"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "contract",
+   "fieldtype": "Link",
+   "label": "Contract",
+   "options": "Contract"
+  },
+  {
+   "fieldname": "flight_details",
+   "fieldtype": "Small Text",
+   "label": " Flight Details"
+  },
+  {
+   "fieldname": "vehicle_details_section",
+   "fieldtype": "Section Break",
+   "label": "Vehicle Details"
+  },
+  {
+   "depends_on": "eval:doc.external_service == 0",
+   "fieldname": "vehicle",
+   "fieldtype": "Link",
+   "label": "Vehicle",
+   "options": "Vehicle"
+  },
+  {
+   "fieldname": "camp_location",
+   "fieldtype": "Link",
+   "label": "Camp Location",
+   "options": "Camp Location"
+  },
+  {
+   "fieldname": "section_break_32",
+   "fieldtype": "Section Break",
+   "label": "Documents"
+  },
+  {
+   "fieldname": "new_arrival_document",
+   "fieldtype": "Table",
+   "label": "New Arrival Document",
+   "options": "New Arrival Document"
+  },
+  {
+   "fieldname": "visa_block_no",
+   "fieldtype": "Data",
+   "label": "Visa Block No"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "iqama_issue",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "IQAMA Issue",
+   "options": "\nMedical Report\nSCE\nNo Payment\nHealth Insurance\nNeed To Visit Passport"
+  },
+  {
+   "fieldname": "employee_number",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Employee Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "visa_issuing_authority",
+   "fieldtype": "Data",
+   "label": "Visa Issuing Authority"
+  },
+  {
+   "fieldname": "sector",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Sector",
+   "options": "\nADMIN\nINDUSTRIAL\nSHARAKA\nDomestic\nSADARA",
+   "reqd": 1
+  },
+  {
+   "fieldname": "visa_date",
+   "fieldtype": "Date",
+   "label": "Visa Date"
+  },
+  {
+   "fieldname": "visa_number",
+   "fieldtype": "Data",
+   "label": "Visa Number"
+  },
+  {
+   "depends_on": "eval:doc.status!='New-Arrival'",
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "section_break_39",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "border_details_section",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "label": "Border Details"
+  },
+  {
+   "fieldname": "iqama_number",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "IQAMA Number"
+  },
+  {
+   "fieldname": "muqeem_status",
+   "fieldtype": "Select",
+   "label": "Muqeem Status",
+   "options": "\nActive\nInactive"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "iqama_issue_date",
+   "fieldtype": "Date",
+   "label": "Iqama issue date"
+  },
+  {
+   "fieldname": "column_break_35",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "profession_status",
+   "fieldtype": "Select",
+   "label": "Profession Status",
+   "options": "Match\nNon Match"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "iqama_expiry_date",
+   "fieldtype": "Date",
+   "label": "Iqama Expiry Date"
+  },
+  {
+   "depends_on": "eval:doc.external_service == 0",
+   "fetch_from": "vehicle.employee",
+   "fieldname": "driver",
+   "fieldtype": "Data",
+   "label": "Driver"
+  },
+  {
+   "default": "0",
+   "fieldname": "external_service",
+   "fieldtype": "Check",
+   "label": "External Service"
+  },
+  {
+   "fieldname": "location_branch",
+   "fieldtype": "Link",
+   "label": "Location (Branch)",
+   "options": "Branch"
+  },
+  {
+   "fieldname": "project_name",
+   "fieldtype": "Link",
+   "label": "Project Name",
+   "options": "Cost Center"
+  },
+  {
+   "fieldname": "gender",
+   "fieldtype": "Link",
+   "label": "Gender",
+   "options": "Gender"
+  },
+  {
+   "fieldname": "date_of_birth",
+   "fieldtype": "Date",
+   "label": "Date Of Birth",
+   "reqd": 1
+  },
+  {
+   "fieldname": "passport_expiry_date",
+   "fieldtype": "Date",
+   "label": "Passport Expiry Date"
+  },
+  {
+   "fieldname": "sponser_id",
+   "fieldtype": "Data",
+   "label": "Sponser ID"
+  },
+  {
+   "default": "Today",
+   "fetch_from": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "in_standard_filter": 1,
+   "label": "Posting Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "non_arrival_updated_date",
+   "fieldtype": "Date",
+   "label": "Non Arrival Updated Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "new_arrival_updated_date",
+   "fieldtype": "Date",
+   "label": "New Arrival Updated Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "border_number_updated_date",
+   "fieldtype": "Date",
+   "label": "Border Number Updated Date",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "iqama_updated_date",
+   "fieldtype": "Date",
+   "label": "IQAMA Updated Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "finance_book",
+   "fieldtype": "Link",
+   "label": "Finance Book",
+   "options": "Finance Book"
+  },
+  {
+   "fieldname": "holiday_list",
+   "fieldtype": "Link",
+   "label": "Holiday List",
+   "options": "Holiday List"
+  },
+  {
+   "fieldname": "employee_contract",
+   "fieldtype": "Link",
+   "label": "Employee Contract",
+   "options": "Contract",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sales_order",
+   "fieldtype": "Link",
+   "label": "Sales Order",
+   "options": "Sales Order"
+  }
+ ],
+ "is_submittable": 1,
+ "modified": "2022-10-06 12:10:09.289581",
+ "modified_by": "Administrator",
+ "module": "Shared Finance App",
+ "name": "New Arrival",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Recruitment Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Recruitment User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "GRO User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Operation User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "cancel": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Operation Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "employee_name",
+ "track_changes": 1,
+ "track_seen": 1,
+ "track_views": 1
+}
