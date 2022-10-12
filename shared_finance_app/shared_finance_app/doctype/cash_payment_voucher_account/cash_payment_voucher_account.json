@@ -1,0 +1,173 @@
+{
+ "creation": "2021-02-04 18:17:00.030701",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item",
+  "charge_to",
+  "ledger_account",
+  "invoice_no",
+  "net_amount",
+  "installment",
+  "deduction_start_date",
+  "number_of_installments",
+  "column_break_5",
+  "vat_5",
+  "vat_percent",
+  "vat_amount",
+  "gross_amount",
+  "paid_amount",
+  "balance_amount",
+  "description",
+  "accounting_dimensions_section",
+  "cost_center",
+  "dimension_col_break"
+ ],
+ "fields": [
+  {
+   "columns": 1,
+   "fieldname": "ledger_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Account",
+   "options": "Account",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "gross_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total Amount",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "vat_5",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Vat",
+   "options": "Item Tax Template"
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "net_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount",
+   "options": "Company:company:default_currency"
+  },
+  {
+   "columns": 2,
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Remarks",
+   "reqd": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "invoice_no",
+   "fieldtype": "Data",
+   "label": "Invoice No."
+  },
+  {
+   "default": "0",
+   "fieldname": "vat_percent",
+   "fieldtype": "Percent",
+   "label": "VAT Percent",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Cost Center",
+   "options": "Cost Center"
+  },
+  {
+   "fieldname": "accounting_dimensions_section",
+   "fieldtype": "Section Break",
+   "label": "Accounting Dimensions"
+  },
+  {
+   "fieldname": "dimension_col_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "vat_amount",
+   "fieldtype": "Currency",
+   "label": "Vat Amount",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "charge_to",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Charge To",
+   "options": "Company\nEmployee\nClient"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.charge_to == \"Employee\"",
+   "fieldname": "installment",
+   "fieldtype": "Check",
+   "label": "Installment"
+  },
+  {
+   "depends_on": "eval:doc.charge_to == \"Employee\" && doc.installment",
+   "fieldname": "deduction_start_date",
+   "fieldtype": "Date",
+   "label": "Deduction Start Date"
+  },
+  {
+   "depends_on": "eval:doc.charge_to == \"Employee\" && doc.installment",
+   "fieldname": "number_of_installments",
+   "fieldtype": "Int",
+   "label": "Number Of Installments"
+  },
+  {
+   "fieldname": "paid_amount",
+   "fieldtype": "Currency",
+   "label": "Paid Amount",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "balance_amount",
+   "fieldtype": "Currency",
+   "label": "Balance Amount",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  }
+ ],
+ "istable": 1,
+ "modified": "2022-09-15 14:16:46.079512",
+ "modified_by": "Administrator",
+ "module": "Shared Finance App",
+ "name": "Cash Payment Voucher Account",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}
