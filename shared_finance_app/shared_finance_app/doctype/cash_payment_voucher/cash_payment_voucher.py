@@ -107,8 +107,8 @@ class CashPaymentVoucher(Document):
 			self.make_non_department_jv()
 			self.make_department_jv()
 
-		if frappe.db.get_single_value('JawaHR Settings', 'auto_salary_from_cpv'):
-			self.create_additional_salaries()
+		# if frappe.db.get_single_value('JawaHR Settings', 'auto_salary_from_cpv'):
+		# 	self.create_additional_salaries()
 
 		# Calculate and update total_vat if it is not calculated.
 		if not self.total_vat:
