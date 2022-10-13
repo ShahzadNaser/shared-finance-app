@@ -1,0 +1,318 @@
+{
+ "creation": "2022-01-19 11:29:52.077364",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "lock_finance_data_section",
+  "lock_data",
+  "lock_upto",
+  "section_break_4",
+  "auto_salary_from_cpv",
+  "payroll_calculation_settings_section",
+  "saudi_gosi_ceiling",
+  "check_6",
+  "bahraini_gosi_ceiling",
+  "settlement_configration_section",
+  "except_nationality",
+  "section_break_10",
+  "enable_auto_attendance_in_payroll_calculation",
+  "attendance_cut_off_period",
+  "attendance_cut_off_period_domestic",
+  "column_break_15",
+  "use_default_shift_for_all_company",
+  "default_shift",
+  "notifications_setting_section",
+  "iqama_and_passport_expiry_notification",
+  "notify_before_contract_end",
+  "notify_with_list_of_employee_in_pdf",
+  "column_break_22",
+  "notify_for_new_employee_arrivals",
+  "notify_for_employee_without_salary_data",
+  "default_cc_email",
+  "payment_settings_section",
+  "default_date_for_outstanding_invoices",
+  "email_notification_section",
+  "new_lead_notification",
+  "lead_assignment_notification",
+  "column_break_32",
+  "lead_follow_up_notification",
+  "finance_book_settings_section",
+  "frozen_finance_books",
+  "representedby__for_mudad_section",
+  "represented_by_arb",
+  "represented_by_eng",
+  "column_break_34",
+  "job_title_of_representedby_arb",
+  "job_title_of_representedby_eng"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "lock_data",
+   "fieldtype": "Check",
+   "label": "Lock Data"
+  },
+  {
+   "depends_on": "eval:doc.lock_data==1",
+   "fieldname": "lock_upto",
+   "fieldtype": "Date",
+   "label": "Lock upto"
+  },
+  {
+   "fieldname": "lock_finance_data_section",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "label": "Lock Finance Data"
+  },
+  {
+   "fieldname": "payroll_calculation_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Payroll Calculation Settings"
+  },
+  {
+   "fieldname": "saudi_gosi_ceiling",
+   "fieldtype": "Float",
+   "label": "Saudi GOSI Ceiling"
+  },
+  {
+   "fieldname": "bahraini_gosi_ceiling",
+   "fieldtype": "Float",
+   "label": "Bahraini GOSI Ceiling"
+  },
+  {
+   "fieldname": "settlement_configration_section",
+   "fieldtype": "Section Break",
+   "label": "Settlement Configuration"
+  },
+  {
+   "description": "Domestic policy is applicable for all domestic employees except this nationality",
+   "fieldname": "except_nationality",
+   "fieldtype": "Link",
+   "label": "Except Nationality",
+   "options": "Nationality"
+  },
+  {
+   "default": "0",
+   "fieldname": "check_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_10",
+   "fieldtype": "Section Break",
+   "label": "Attendance Settings"
+  },
+  {
+   "fieldname": "default_shift",
+   "fieldtype": "Link",
+   "label": "Default Shift",
+   "options": "Shift Type"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_auto_attendance_in_payroll_calculation",
+   "fieldtype": "Check",
+   "label": "Enable auto attendance in payroll calculation"
+  },
+  {
+   "default": "16",
+   "fieldname": "attendance_cut_off_period",
+   "fieldtype": "Int",
+   "label": "Attendance cut-off period (ADMIN)"
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "description": "If this option enabled, advance payment from CPV will be deduct from his own salary",
+   "fieldname": "auto_salary_from_cpv",
+   "fieldtype": "Check",
+   "label": "Auto Salary From CPV"
+  },
+  {
+   "fieldname": "column_break_15",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "use_default_shift_for_all_company",
+   "fieldtype": "Check",
+   "label": "Use Default shift for all company"
+  },
+  {
+   "fieldname": "notifications_setting_section",
+   "fieldtype": "Section Break",
+   "label": "Notifications Setting"
+  },
+  {
+   "description": "<b>Notify the Selected Roles User about the employees  that their iqama or passport will be expired within 4 for month.</b>",
+   "fieldname": "iqama_and_passport_expiry_notification",
+   "fieldtype": "Table MultiSelect",
+   "label": "IQAMA and Passport Expiry Notification",
+   "options": "JawaHR Roles"
+  },
+  {
+   "description": "<b>Send Notification to Selected Roles Before 60 or 30 Days of Contract Ending</b>",
+   "fieldname": "notify_before_contract_end",
+   "fieldtype": "Table MultiSelect",
+   "label": "Notify Before Contract End",
+   "options": "JawaHR Roles"
+  },
+  {
+   "description": "<b>Auto Email Notification &amp; Printout facility for employee list of IQAMA Expiry  Automatic System generate before 30/60 days to concerned department selected here</b>",
+   "fieldname": "notify_with_list_of_employee_in_pdf",
+   "fieldtype": "Table MultiSelect",
+   "label": "Notify With List of Employee in PDF",
+   "options": "JawaHR Roles"
+  },
+  {
+   "fieldname": "column_break_22",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "<b>Email Notifications to Selected Roles about employee arrival list to arrange transportation to pick employee from Airport</b>",
+   "fieldname": "notify_for_new_employee_arrivals",
+   "fieldtype": "Table MultiSelect",
+   "label": "Notify For New Employee Arrivals",
+   "options": "JawaHR Roles"
+  },
+  {
+   "description": "<b>Send email every day to Selected Roles report Employees Without Salary Data</b>",
+   "fieldname": "notify_for_employee_without_salary_data",
+   "fieldtype": "Table MultiSelect",
+   "label": "Notify For Employee Without Salary Data",
+   "options": "JawaHR Roles"
+  },
+  {
+   "fieldname": "attendance_cut_off_period_domestic",
+   "fieldtype": "Int",
+   "label": "Attendance cut-off period (Domestic)"
+  },
+  {
+   "fieldname": "payment_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Settings"
+  },
+  {
+   "fieldname": "default_date_for_outstanding_invoices",
+   "fieldtype": "Date",
+   "label": "Default Date for Outstanding Invoices"
+  },
+  {
+   "description": "<b>This email 'll be added on every outgoing email from notifications.</b>",
+   "fieldname": "default_cc_email",
+   "fieldtype": "Data",
+   "label": "Default CC Email"
+  },
+  {
+   "fieldname": "finance_book_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Finance Book Settings"
+  },
+  {
+   "fieldname": "frozen_finance_books",
+   "fieldtype": "Table",
+   "label": "Frozen Finance Books",
+   "options": "Frozen Finance Books"
+  },
+  {
+   "fieldname": "representedby__for_mudad_section",
+   "fieldtype": "Section Break",
+   "label": "RepresentedBy  For Mudad"
+  },
+  {
+   "fieldname": "represented_by_arb",
+   "fieldtype": "Data",
+   "label": "Represented By Arb"
+  },
+  {
+   "fieldname": "represented_by_eng",
+   "fieldtype": "Data",
+   "label": "Represented By Eng"
+  },
+  {
+   "fieldname": "column_break_34",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "job_title_of_representedby_arb",
+   "fieldtype": "Data",
+   "label": "Job title of RepresentedBy Arb"
+  },
+  {
+   "fieldname": "job_title_of_representedby_eng",
+   "fieldtype": "Data",
+   "label": "Job title of RepresentedBy Eng"
+  },{
+    "fieldname": "email_notification_section",
+   "fieldtype": "Section Break",
+   "label": "Email Notification"
+  },
+  {
+   "fieldname": "new_lead_notification",
+   "fieldtype": "Link",
+   "label": "New Lead Notification",
+   "options": "Email Template"
+  },
+  {
+   "fieldname": "lead_assignment_notification",
+   "fieldtype": "Link",
+   "label": "Lead Assignment Notification",
+   "options": "Email Template"
+  },
+  {
+   "fieldname": "column_break_32",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "lead_follow_up_notification",
+   "fieldtype": "Link",
+   "label": "Lead Follow Up Notification",
+   "options": "Email Template"
+  }
+ ],
+
+ "issingle": 1,
+ "modified": "2022-10-05 12:31:03.728934",
+ "modified_by": "Administrator",
+ "module": "Shared Finance App",
+ "name": "JawaHR Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
