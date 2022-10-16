@@ -1,5 +1,21 @@
 [
- {
+  {
+  "default_value": "0",
+  "doc_type": "Payment Request",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "currency",
+  "modified": "2022-10-16 14:38:31.442080",
+  "name": "Payment Request-currency-read_only",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "read_only",
+  "property_type": "Check",
+  "value": "0"
+ },
+  {
   "default_value": null,
   "doc_type": "Payment Request",
   "docstatus": 0,
@@ -134,22 +150,7 @@
   "parentfield": null,
   "parenttype": null,
  "field_name": "transaction_details", "name": "Payment Request-transaction_details-depends_on","property": "depends_on ","property_type": "Data","value": "eval: !doc.pay_to_party"
- },
-  {
-  "default_value": "0",
-  "doc_type": "Payment Request",
-  "docstatus": 0,
-  "doctype": "Property Setter",
-  "doctype_or_field": "DocField",
-  "field_name": "currency",
-  "modified": "2022-10-16 14:38:31.442080",
-  "name": "Payment Request-currency-read_only",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
-  "property": "read_only",
-  "property_type": "Check",
-  "value": "0"
  }
+
 ]
 
