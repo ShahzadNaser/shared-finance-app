@@ -13,7 +13,7 @@ frappe.listview_settings['Payment Request']["onload"] = function (doclist) {
 				};
 
 				frappe.call({
-					method: "jawaerp.overrides_class.payment_request.make_payment_entries",
+					method: "shared_finance_app.overrides_class.payment_request.make_payment_entries",
 					args: {"docnames": docnames},
 					freeze: true,
 					callback: function(r){
@@ -40,7 +40,7 @@ frappe.listview_settings['Payment Request']["onload"] = function (doclist) {
 				};
 
 				frappe.call({
-					method: "jawaerp.overrides_class.payment_request.make_journal_entries",
+					method: "shared_finance_app.overrides_class.payment_request.make_journal_entries",
 					args: {"docnames": docnames},
 					freeze: true,
 					callback: function(r){
