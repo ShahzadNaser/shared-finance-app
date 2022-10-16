@@ -135,3 +135,14 @@ override_doctype_dashboards = {
 # override_doctype_dashboards = {
 # 	"Task": "shared_finance_app.task.get_dashboard_data"
 # }
+
+
+fixtures = [
+	{
+		"dt": "Property Setter",
+		"filters": [
+			["name", "in", [
+				"Payment Request-currency-read_only"
+			]]
+		]
+	}]
