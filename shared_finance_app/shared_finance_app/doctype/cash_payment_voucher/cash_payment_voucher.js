@@ -66,7 +66,7 @@ frappe.ui.form.on("Cash Payment Voucher", {
 		if (frm.doc.party_type == "Department" && frm.doc.pay_to){	
 			// console.log("dd");	
 			frappe.call({
-				method:"jawaerp.jawaerp.doctype.cash_payment_voucher.cash_payment_voucher.getDept_Account",
+				method:"shared_finance_app.shared_finance_app.doctype.cash_payment_voucher.cash_payment_voucher.getDept_Account",
 				args:{
 					party_name : frm.doc.party_name,
 				},
@@ -184,7 +184,7 @@ function calculate_tax(frm, cdt, cdn) {
 	var row = locals[cdt][cdn];
 	if (row.vat_5) {
 		frappe.call({
-			method: "jawaerp.jawaerp.doctype.cash_payment_voucher.cash_payment_voucher.getTax_Percent",
+			method: "shared_finance_app.shared_finance_app.doctype.cash_payment_voucher.cash_payment_voucher.getTax_Percent",
 			args: {
 				item_tax_template: row.vat_5,
 			},
@@ -222,7 +222,7 @@ function calculate_total(frm) {
 function set_party_name(frm) {
 	if (frm.doc.pay_to && frm.doc.party_type) {
 		frappe.call({
-			method: "jawaerp.jawaerp.doctype.cash_payment_voucher.cash_payment_voucher.getParty_Name",
+			method: "shared_finance_app.shared_finance_app.doctype.cash_payment_voucher.cash_payment_voucher.getParty_Name",
 			args: {
 				party : frm.doc.pay_to,
 				party_type : frm.doc.party_type

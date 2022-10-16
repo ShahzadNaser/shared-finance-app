@@ -75,7 +75,7 @@ frappe.listview_settings['Cash Payment Voucher']["onload"] = function (doclist) 
 			};
 
 			frappe.call({
-				method: "jawaerp.jawaerp.doctype.cash_payment_voucher.cash_payment_voucher.make_journal_voucher",
+				method: "shared_finance_app.shared_finance_app.doctype.cash_payment_voucher.cash_payment_voucher.make_journal_voucher",
 				args: {"docnames": docnames},
 				freeze: true,
 				callback: function(r){

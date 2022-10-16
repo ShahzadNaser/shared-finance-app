@@ -7,7 +7,7 @@ import datetime
 import frappe
 from frappe.utils import money_in_words
 from frappe.model.document import Document
-from jawaerp import update_next_state
+# from jawaerp import update_next_state
 import erpnext
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import get_accounting_dimensions
 from frappe.utils import flt, getdate, add_days
