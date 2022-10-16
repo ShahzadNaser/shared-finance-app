@@ -137,12 +137,3 @@ override_doctype_dashboards = {
 # }
 
 
-fixtures = [
-	{
-		"dt": "Property Setter",
-		"filters": [
-			["name", "in", [
-				"Payment Request-currency-read_only"
-			]]
-		]
-	}]
