@@ -12,6 +12,8 @@ def after_migrate():
 
 
 
+
+
     frappe.db.commit()
 
 
