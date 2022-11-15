@@ -100,7 +100,7 @@ override_doctype_dashboards = {
 }
 
 
-after_migrate = "shared_finance_app.utils.migrate.after_migrate"
+# after_migrate = "shared_finance_app.utils.migrate.after_migrate"
 
 
 # Scheduled Tasks
