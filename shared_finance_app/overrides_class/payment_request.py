@@ -11,7 +11,7 @@ from erpnext.accounts.doctype.journal_entry.journal_entry import get_default_ban
 from erpnext.accounts.doctype.bank_account.bank_account import get_party_bank_account
 from erpnext.accounts.doctype.invoice_discounting.invoice_discounting import get_party_account_based_on_invoice_discounting
 from erpnext.accounts.doctype.payment_entry.payment_entry import get_reference_as_per_payment_terms
-from frappe.integrations.utils import get_payment_gateway_controller
+from payments.utils.utils import get_payment_gateway_controller
 
 
 class CustomPaymentRequest(PaymentRequest):
