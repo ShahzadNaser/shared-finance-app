@@ -134,7 +134,7 @@ frappe.ui.form.on('Payment Request', {
 						c.outstanding_amount = d.outstanding_amount;
 						c.bill_no = d.bill_no;
 						c.payment_term = d.payment_term;
-						c.allocated_amount = 0.0;
+						c.allocated_amount = d.allocated_amount;
 					});
                             frm.refresh_fields();
 				}
