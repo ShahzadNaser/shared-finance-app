@@ -80,7 +80,9 @@ class CustomPaymentRequest(PaymentRequest):
 				self.make_communication_entry()
 
 	def get_payment_url(self):
-		from payments.utils.utils import get_payment_gateway_controller
+
+		from frappe.integrations.utils import get_payment_gateway_controller
+
 
 		if self.reference_doctype != "Fees":
 			data = frappe.db.get_value(self.reference_doctype, self.reference_name, ["company", "customer_name"], as_dict=1)
