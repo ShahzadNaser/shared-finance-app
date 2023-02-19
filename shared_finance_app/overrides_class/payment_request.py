@@ -19,8 +19,8 @@ class CustomPaymentRequest(PaymentRequest):
 		if hasattr(super(), "before_save"):
 			super().befor_save()
 
-		if self.pay_to_party == 0:
-			self.calculate_totals()
+		#if self.pay_to_party == 0:
+		self.calculate_totals()
 		# self.validate_reference_doc()
 
 	def calculate_totals(self):
