@@ -74,8 +74,7 @@ frappe.ui.form.on('Payment Request', {
           frm.refresh_fields(); 
      },
      before_save: function(frm) {
-          if (frm.doc.pay_to_party === 0)
-               update_totals(frm);
+          update_totals(frm);
           frm.trigger("update_employee");
      },
      party_type: function(frm) {
