@@ -158,6 +158,10 @@ frappe.ui.form.on('Payment Request Item', {
      calc_balance(frm, cdt, cdn)    
 
    },
+    amount: function(frm, cdt, cdn) {
+     calc_balance(frm, cdt, cdn)
+
+   },
    less_advance_paid: function (frm, cdt, cdn) {
       calc_balance(frm, cdt, cdn)        
 

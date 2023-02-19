@@ -26,10 +26,15 @@ class CustomPaymentRequest(PaymentRequest):
 		self.grand_total = 0
 		self.total_of_advance_paid = 0
 		self.total_now_being_requested = 0
-		for row in self.payment_request_item:
-			self.grand_total += row.amount or 0
-			self.total_of_advance_paid += row.less_advance_paid or 0
-			self.total_now_being_requested += row.now_being_request or 0
+		if self.pay_to_party:
+			for row in self.payment_request_item:
+				self.grand_total += row.amount or 0
+				self.total_of_advance_paid += row.less_advance_paid or 0
+				self.total_now_being_requested += row.now_being_request or 0
+		else:
+			for row in self.payment_request_reference:
+				self.grand_total += row.total_amount or 0
+
 
 	def validate_reference_document(self):
 
@@ -82,8 +87,6 @@ class CustomPaymentRequest(PaymentRequest):
 	def get_payment_url(self):
 
 		from frappe.integrations.utils import get_payment_gateway_controller
-
-
 		if self.reference_doctype != "Fees":
 			data = frappe.db.get_value(self.reference_doctype, self.reference_name, ["company", "customer_name"], as_dict=1)
 		else:
