@@ -33,7 +33,10 @@ class CustomPaymentRequest(PaymentRequest):
 				self.total_now_being_requested += row.now_being_request or 0
 		else:
 			for row in self.payment_request_reference:
-				self.grand_total += row.total_amount or 0
+				self.grand_total += row.allocated_amount or 0
+			self.total_now_being_requested = self.grand_total
+
+
 
 
 	def validate_reference_document(self):

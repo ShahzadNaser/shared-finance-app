@@ -111,7 +111,7 @@ frappe.ui.form.on('Payment Request', {
 			"party_type": frm.doc.party_type,
 			"party": frm.doc.party,
 			"cost_center": frm.doc.cost_center,
-               "party_account": frm.doc.party_account
+             "party_account": frm.doc.party_account
 		}
 
 		return  frappe.call({
@@ -133,7 +133,7 @@ frappe.ui.form.on('Payment Request', {
 						c.outstanding_amount = d.outstanding_amount;
 						c.bill_no = d.bill_no;
 						c.payment_term = d.payment_term;
-						c.allocated_amount = d.allocated_amount;
+						c.allocated_amount = d.outstanding_amount;
 					});
                             frm.refresh_fields();
 				}
