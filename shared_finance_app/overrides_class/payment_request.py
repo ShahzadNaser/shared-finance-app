@@ -35,6 +35,8 @@ class CustomPaymentRequest(PaymentRequest):
 			for row in self.payment_request_reference:
 				self.grand_total += row.allocated_amount or 0
 			self.total_now_being_requested = self.grand_total
+		self.wire_transfer=self.grand_total
+
 
 
 
