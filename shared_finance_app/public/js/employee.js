@@ -1,13 +1,13 @@
 frappe.ui.form.on('Employee', {
 	refresh(frm) {
-		let items = ["personal_information","users_data","employment_data","others"];
-		setTimeout(function(){
-			init_btns(frm);
-			items.forEach(item => {
-				$('.control-input [data-fieldname="'+item+'"]').css("width","100%");
-				$('.control-input [data-fieldname="'+item+'"]').css("height","40px");			
-			});
-		},100);
+		// let items = ["personal_information","users_data","employment_data","others"];
+		// setTimeout(function(){
+		// 	init_btns(frm);
+		// 	items.forEach(item => {
+		// 		$('.control-input [data-fieldname="'+item+'"]').css("width","100%");
+		// 		$('.control-input [data-fieldname="'+item+'"]').css("height","40px");
+		// 	});
+		// },100);
 			
 
 	},
