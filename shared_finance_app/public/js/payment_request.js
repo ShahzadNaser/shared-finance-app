@@ -74,7 +74,11 @@ frappe.ui.form.on('Payment Request', {
           frm.refresh_fields(); 
      },
      before_save: function(frm) {
-          update_totals(frm);
+          // Only recalculate totals if NOT paying to a party (manual payment request items)
+          // When pay_to_party = 1, grand_total comes from the reference document
+          if (frm.doc.pay_to_party === 0) {
+               update_totals(frm);
+          }
           frm.trigger("update_employee");
      },
      party_type: function(frm) {
