@@ -41,6 +41,37 @@ class CustomPaymentRequest(PaymentRequest):
 
 
 
+	def validate_payment_request_amount(self):
+		"""Override to only validate when pay_to_party = 1"""
+		# Only validate against reference document when paying to a party
+		if self.pay_to_party == 1 and self.reference_doctype and self.reference_name:
+			from erpnext.accounts.doctype.payment_request.payment_request import (
+				get_amount,
+				get_existing_payment_request_amount,
+			)
+
+			existing_payment_request_amount = get_existing_payment_request_amount(
+				self.reference_doctype, self.reference_name
+			)
+
+			if existing_payment_request_amount:
+				ref_doc = frappe.get_doc(self.reference_doctype, self.reference_name)
+				if not hasattr(ref_doc, "order_type") or getattr(ref_doc, "order_type") != "Shopping Cart":
+					ref_amount = get_amount(ref_doc, self.payment_account)
+
+					if existing_payment_request_amount + flt(self.grand_total) > ref_amount:
+						frappe.throw(
+							_("Total Payment Request amount cannot be greater than {0} amount").format(
+								self.reference_doctype
+							)
+						)
+		# For pay_to_party = 0, just validate grand_total is not zero
+		elif self.grand_total == 0:
+			frappe.throw(
+				_("{0} cannot be zero").format(self.get_label_from_fieldname("grand_total")),
+				title=_("Invalid Amount"),
+			)
+
 	def validate_reference_document(self):
 
 
