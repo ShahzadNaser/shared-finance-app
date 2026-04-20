@@ -88,13 +88,11 @@ doc_events = {
         "on_submit": "shared_finance_app.overrides_class.payment_request.on_submit_via_hooks",
         "on_cancel": "shared_finance_app.overrides_class.payment_request.on_cancel",
     },
-    "Sales Invoice": {
-        "before_submit": "shared_finance_app.overrides_class.sales_invoice.before_submit",
-    },
 }
 
 override_doctype_class = {
-    'Payment Request': 'shared_finance_app.overrides_class.payment_request.CustomPaymentRequest'
+    'Payment Request': 'shared_finance_app.overrides_class.payment_request.CustomPaymentRequest',
+    'Sales Invoice': 'shared_finance_app.overrides_class.sales_invoice.CustomSalesInvoice',
 }
 
 override_doctype_dashboards = {
