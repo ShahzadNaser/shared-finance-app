@@ -1,0 +1,11 @@
+[
+  {
+    "doctype": "Custom Field",
+    "dt": "Sales Invoice",
+    "fieldname": "custom_pass_zatca",
+    "fieldtype": "Check",
+    "label": "Pass ZATCA",
+    "insert_after": "is_return",
+    "description": "If checked, ZATCA validation errors will be skipped for this invoice"
+  }
+]
