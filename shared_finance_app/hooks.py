@@ -103,10 +103,6 @@ override_doctype_dashboards = {
 }
 
 
-fixtures = [
-    {"dt": "Custom Field", "filters": [["dt", "=", "Sales Invoice"], ["fieldname", "=", "custom_pass_zatca"]]},
-]
-
 # after_migrate = "shared_finance_app.utils.migrate.after_migrate"
 
 

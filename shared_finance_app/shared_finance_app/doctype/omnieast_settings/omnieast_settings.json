@@ -1,0 +1,46 @@
+{
+ "creation": "2026-04-20 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "zatca_section",
+  "pass_zatca"
+ ],
+ "fields": [
+  {
+   "fieldname": "zatca_section",
+   "fieldtype": "Section Break",
+   "label": "ZATCA"
+  },
+  {
+   "default": "0",
+   "fieldname": "pass_zatca",
+   "fieldtype": "Check",
+   "label": "Pass ZATCA",
+   "description": "If enabled, ZATCA validation errors will be skipped on Sales Invoice submission"
+  }
+ ],
+ "issingle": 1,
+ "modified": "2026-04-20 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Shared Finance App",
+ "name": "Omnieast Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

@@ -5,8 +5,7 @@ def _patch_zatca_module():
     """
     Patch zatca_erpgulf's validate_sales_invoice_taxes at import time so it
     respects the per-request frappe.flags.skip_zatca_validation flag.
-    This is thread-safe because frappe.flags is stored on frappe.local
-    (thread-local storage), so each request has its own copy of the flag.
+    Thread-safe: frappe.flags is stored on frappe.local (per-request thread-local).
     """
     try:
         import zatca_erpgulf.zatca_erpgulf.tax_error as _tax_error
@@ -23,18 +22,14 @@ def _patch_zatca_module():
         pass
 
 
-# Patch once when this module is first imported (i.e. when the first
-# Sales Invoice before_submit hook fires).
+# Patch once when this module is first imported.
 _patch_zatca_module()
 
 
 def before_submit(doc, event=None):
     """
-    Set frappe.flags.skip_zatca_validation for this request if the
-    'Pass ZATCA' checkbox is ticked on the Sales Invoice.
-
-    This hook is registered in shared_finance_app and runs before
-    zatca_erpgulf's hook because shared_finance_app appears earlier
-    in the installed-apps list.
+    Read the global Pass ZATCA flag from Omnieast Settings.
+    If enabled, ZATCA validation is skipped for this request.
     """
-    frappe.flags.skip_zatca_validation = bool(doc.get("custom_pass_zatca"))
+    settings = frappe.get_single("Omnieast Settings")
+    frappe.flags.skip_zatca_validation = bool(settings.pass_zatca)
