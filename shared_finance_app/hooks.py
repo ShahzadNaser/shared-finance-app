@@ -87,7 +87,10 @@ doc_events = {
     "Payment Request": {
         "on_submit": "shared_finance_app.overrides_class.payment_request.on_submit_via_hooks",
         "on_cancel": "shared_finance_app.overrides_class.payment_request.on_cancel",
-    }
+    },
+    "Sales Invoice": {
+        "before_submit": "shared_finance_app.overrides_class.sales_invoice.before_submit",
+    },
 }
 
 override_doctype_class = {
@@ -99,6 +102,10 @@ override_doctype_dashboards = {
 
 }
 
+
+fixtures = [
+    {"dt": "Custom Field", "filters": [["dt", "=", "Sales Invoice"], ["fieldname", "=", "custom_pass_zatca"]]},
+]
 
 # after_migrate = "shared_finance_app.utils.migrate.after_migrate"
 
