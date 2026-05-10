@@ -1,1 +1,2 @@
 import shared_finance_app.monkey_patches.zatca_patch
+import shared_finance_app.monkey_patches.sales_invoice_patch
