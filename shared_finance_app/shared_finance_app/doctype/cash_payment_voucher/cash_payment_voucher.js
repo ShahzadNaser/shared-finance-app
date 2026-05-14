@@ -234,10 +234,10 @@ function set_party_name(frm) {
 	}
 }
 
-cur_frm.set_query("vat_5", "cash_payment_voucher_account", function (doc, cdt, cdn) {
-	return {
-		filters: {
-			"is_sales": 0
-		},
-	};
-});
+// cur_frm.set_query("vat_5", "cash_payment_voucher_account", function (doc, cdt, cdn) {
+// 	return {
+// 		filters: {
+// 			"is_sales": 0
+// 		},
+// 	};
+// });
