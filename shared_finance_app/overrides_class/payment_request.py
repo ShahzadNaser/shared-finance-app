@@ -78,7 +78,7 @@ class CustomPaymentRequest(PaymentRequest):
 			self.db_set('status', 'Requested')
 
 		send_mail = self.payment_gateway_validation() if self.payment_gateway else None
-		if self.pay_to_party == 1:
+		if self.pay_to_party == 1 and self.reference_doctype and self.reference_name:
 			ref_doc = frappe.get_doc(self.reference_doctype, self.reference_name)
 			if (hasattr(ref_doc, "order_type") and getattr(ref_doc, "order_type") == "Shopping Cart") \
 				or self.flags.mute_email:
