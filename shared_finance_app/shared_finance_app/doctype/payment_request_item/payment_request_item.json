@@ -89,7 +89,8 @@
   {
    "fieldname": "finance_book",
    "fieldtype": "Link",
-   "in_list_view": 1,
+   "in_list_view": 0,
+   "hidden": 1,
    "label": "Finance Book",
    "options": "Finance Book"
   },
