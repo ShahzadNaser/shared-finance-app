@@ -5,7 +5,7 @@ _original_validate = tax_error.validate_sales_invoice_taxes
 
 
 def custom_validate_sales_invoice_taxes(doc, event=None):
-    settings = frappe.get_single("Omnieast Settings")
+    settings = frappe.get_single("Zatca Validate Setting")
     if settings.pass_zatca:
         return
     return _original_validate(doc, event)

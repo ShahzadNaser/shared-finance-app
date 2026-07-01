@@ -20,7 +20,24 @@ class CustomPaymentRequest(PaymentRequest):
 
 		#if self.pay_to_party == 0:
 		self.calculate_totals()
+		self.set_default_mode_of_payment()
 		# self.validate_reference_doc()
+
+	def set_default_mode_of_payment(self):
+		if self.mode_of_payment:
+			return
+
+		company = self.company or frappe.defaults.get_defaults().company
+		if not company:
+			return
+
+		default = frappe.db.get_value(
+			"Mode of Payment Account",
+			{"company": company, "default_account": ["is", "set"]},
+			"parent",
+		)
+		if default:
+			self.mode_of_payment = default
 
 	def calculate_totals(self):
 		self.grand_total = 0
@@ -50,12 +67,10 @@ class CustomPaymentRequest(PaymentRequest):
 				get_existing_payment_request_amount,
 			)
 
-			existing_payment_request_amount = get_existing_payment_request_amount(
-				self.reference_doctype, self.reference_name
-			)
+			ref_doc = frappe.get_doc(self.reference_doctype, self.reference_name)
+			existing_payment_request_amount = get_existing_payment_request_amount(ref_doc)
 
 			if existing_payment_request_amount:
-				ref_doc = frappe.get_doc(self.reference_doctype, self.reference_name)
 				if not hasattr(ref_doc, "order_type") or getattr(ref_doc, "order_type") != "Shopping Cart":
 					ref_amount = get_amount(ref_doc, self.payment_account)
 

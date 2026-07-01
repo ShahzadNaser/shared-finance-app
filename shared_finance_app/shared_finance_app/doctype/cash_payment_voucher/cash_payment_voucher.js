@@ -34,28 +34,20 @@ cur_frm.set_query("item", "cash_payment_voucher_account", function(doc, cdt, cdn
 
 
 frappe.ui.form.on("Cash Payment Voucher", {
-	refresh: (frm) => {
-		if(typeof(frm.doc.__islocal) == "undefined"){
-			// console.log("Yes");
-			frm.set_df_property('mode_of_payment',  'hidden',  0);
-			frm.set_df_property('finance_book',  'hidden',  0);
-			if(frappe.user.has_role('Accounts Manager') || frappe.user.has_role('Payroll & Payables') || 
-			frappe.user.has_role('Accounts payable') || frappe.user.has_role('Accounts User') ||
-			frappe.user.has_role('Sales & Receivable Manager') || frappe.user.has_role('Sales & Receivable')){
-				var df_ledger_account = frappe.meta.get_docfield("Cash Payment Voucher Account","ledger_account", cur_frm.doc.name);
-				df_ledger_account.read_only = 0;
-				var df_item = frappe.meta.get_docfield("Cash Payment Voucher Account","item", cur_frm.doc.name);
-				df_item.read_only = 0;
+	onload: (frm) => {
+		if (frm.is_new() && !frm.doc.company) {
+			const default_company = frappe.defaults.get_user_default("Company")
+				|| frappe.defaults.get_global_default("company");
+			if (default_company) {
+				frm.set_value("company", default_company);
 			}
 		}
-		// setTimeout(function () {
-			frm.trigger("clear_employee");
-		// },300);
+	},
+	refresh: (frm) => {
+		frm.trigger("clear_employee");
 	},
 	pay_to: (frm, cdt, cdn) => {
-		cur_frm.add_fetch('pay_to',  'finance_book',  'finance_book');
 		set_party_name(frm);
-
 	},
 	party_type: (frm, cdt, cdn) => {
 		frm.set_value("pay_to","");
@@ -101,28 +93,13 @@ frappe.ui.form.on("Cash Payment Voucher", {
 	validate: (frm, cdt, cdn) => {
 		set_party_name(frm);
 	},
-	after_save: (frm, cdt, cdn) => {
-		if(typeof(frm.doc.__islocal) == "undefined"){
-			// console.log("Yes");
-			frm.set_df_property('mode_of_payment',  'hidden',  0);
-			frm.set_df_property('finance_book',  'hidden',  0);
-			if(frappe.user.has_role('Accounts Manager') || frappe.user.has_role('Payroll & Payables') || 
-			frappe.user.has_role('Accounts payable') || frappe.user.has_role('Accounts User') ||
-			frappe.user.has_role('Sales & Receivable Manager') || frappe.user.has_role('Sales & Receivable')){
-				var df_ledger_account = frappe.meta.get_docfield("Cash Payment Voucher Account","ledger_account", cur_frm.doc.name);
-				df_ledger_account.read_only = 0;
-				var df_item = frappe.meta.get_docfield("Cash Payment Voucher Account","item", cur_frm.doc.name);
-				df_item.read_only = 0;
-			}
-		}
-	},
 	before_save: function(frm){
 		calculate_total(frm);
 		frm.trigger("clear_employee");
 	},
 	before_submit: (frm, cdt, cdn) => {
-		if(frm.doc.docstatus==1 && typeof(frm.doc.mode_of_payment) == "undefined" || typeof(frm.doc.finance_book) == "undefined") {
-           	frappe.throw("Mode of Payment or Finance book should not be blank");
+		if(frm.doc.docstatus==1 && typeof(frm.doc.mode_of_payment) == "undefined") {
+           	frappe.throw("Mode of Payment should not be blank");
         }
 	},
 	employee: function(frm) {
