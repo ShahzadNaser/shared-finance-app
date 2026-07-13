@@ -45,13 +45,67 @@ frappe.ui.form.on("Cash Payment Voucher", {
 	},
 	refresh: (frm) => {
 		frm.trigger("clear_employee");
+
+		let help_box = frm.get_field('custom_department_manager').$wrapper.find('.help-box');
+        
+		if (help_box.length) {
+			// Appling color
+			help_box[0].style.setProperty('color', '#2490EF', 'important');
+			help_box[0].style.setProperty('font-weight', 'bold', 'important');
+		}
+
+		frm.set_query('department', function() {
+            return {
+				filters: [
+						['Department', 'name', '!=', 'All Departments'],
+						['Department', 'Company', '=', frm.doc.company]
+				]
+			};
+		});
+
+		if(frm.doc.party_type == "Department"){
+			frm.set_query('pay_to', function() {
+				return {
+					filters: [
+							['Department', 'name', '!=', 'All Departments'],
+							['Department', 'Company', '=', frm.doc.company]
+					]
+				};
+			});
+		}
+
+
+		if(frm.doc.party_type == "Department" && frm.doc.pay_to){
+			frm.set_value("department", frm.doc.pay_to);
+		}
+
+		if(frm.doc.department){
+			frm.trigger("set_department_manager");
+		}
+
+
 	},
 	pay_to: (frm, cdt, cdn) => {
 		set_party_name(frm);
+
+		if(frm.doc.party_type == "Department" && frm.doc.pay_to && frm.doc.department != frm.doc.pay_to){
+			frm.set_value("department", frm.doc.pay_to);
+		}
 	},
 	party_type: (frm, cdt, cdn) => {
 		frm.set_value("pay_to","");
 		frm.set_value("party_name","");
+
+		if(frm.doc.party_type == "Department"){
+			frm.set_query('pay_to', function() {
+				return {
+					filters: [
+							['Department', 'name', '!=', 'All Departments'],
+							['Department', 'Company', '=', frm.doc.company]
+					]
+				};
+			});
+		}
 	},
 
 	party_name: (frm, cdt, cdn) =>{
@@ -112,6 +166,26 @@ frappe.ui.form.on("Cash Payment Voucher", {
 			frm.doc.employee = "";
 			frm.doc.cash_payment_voucher_account.forEach(function(item){
 				item.employee = "";
+			});
+		}
+	},
+	department: function(frm) {
+          frm.trigger("set_department_manager");
+    },
+    set_department_manager: function(frm) {
+		if (frm.doc.department) {
+			return frappe.call({
+				method: 'shared_finance_app.overrides_class.payment_request.get_department_manager',
+				args: {
+					"department": frm.doc.department,
+				},
+				callback: function(r) {
+					if (r && r.message) {
+						if (frm.doc.custom_department_manager !== r.message) {
+							frm.set_value('custom_department_manager', r.message);
+						}
+					}
+				}
 			});
 		}
 	}
@@ -211,10 +285,10 @@ function set_party_name(frm) {
 	}
 }
 
-// cur_frm.set_query("vat_5", "cash_payment_voucher_account", function (doc, cdt, cdn) {
-// 	return {
-// 		filters: {
-// 			"is_sales": 0
-// 		},
-// 	};
-// });
+cur_frm.set_query("vat_5", "cash_payment_voucher_account", function (doc, cdt, cdn) {
+	return {
+		filters: {
+			"company": cur_frm.doc.company
+		},
+	};
+});

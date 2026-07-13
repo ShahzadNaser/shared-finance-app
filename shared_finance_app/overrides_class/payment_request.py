@@ -23,6 +23,18 @@ class CustomPaymentRequest(PaymentRequest):
 		self.set_default_mode_of_payment()
 		# self.validate_reference_doc()
 
+		# 1. Prepare field_a and field_b
+		field_a = self.total_now_being_requested or ""
+		field_b = self.reimbursement_type or ""
+        
+        # 2. Construct the fresh title based on current form values
+		raw_title = f"{field_a} - {field_b}".strip(" - ")
+		new_title = raw_title[:139] # Safe truncation for Data field (140 max)
+		
+		# Update if custom_title is empty OR if the current values don't match the existing title
+		if not self.custom_title or not self.custom_title.strip() or self.custom_title != new_title:
+			self.custom_title = new_title
+
 	def set_default_mode_of_payment(self):
 		if self.mode_of_payment:
 			return
@@ -311,6 +323,114 @@ def make_journal_entries(docnames = None):
 	return doclist
 
 @frappe.whitelist()
+def make_common_journal_entries(docnames = None):
+	if not docnames:
+		return 
+	docnames = json.loads(docnames)
+	doclist = []
+	for name in docnames:
+		doc = frappe.get_doc("Payment Request", name)
+        
+        # Backend safety checks
+		if doc.docstatus == 2:
+			frappe.throw(_("Payment Request {0} is cancelled.").format(name))
+		if doc.workflow_state != "Final Approval":
+			frappe.throw(_("Payment Request {0} workflow status must be 'Final Approval'.").format(name))
+		if doc.pay_to_party:
+			frappe.throw(_("Pay To Party must be unchecked for {0}.").format(name))
+		
+		doclist.append(name)
+
+	if len(doclist) > 0:
+		make_common_journal_voucher(doclist)
+
+@frappe.whitelist()
+def make_common_journal_voucher(pr_name, doc=None, show_msg=True):
+	company = frappe.defaults.get_defaults().company
+	from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import get_accounting_dimensions
+	finance_book = None
+
+	je = frappe.new_doc('Journal Entry')
+	je.voucher_type = 'Journal Entry'
+	je.posting_date = nowdate()
+	je.company =  company
+	if len(pr_name) == 1:
+		je.cheque_no = pr_name[0]
+		je.user_remark = f"PWA: {pr_name[0]}"
+	else:
+		# Join multiple records with a comma separation string
+		combined_names = ", ".join(str(name) for name in pr_name)
+		je.cheque_no = combined_names
+		je.user_remark = f"Multiple PWAs: {combined_names}"
+	je.cheque_date = nowdate()
+
+	for pr in pr_name:
+		if pr:
+			doc = frappe.get_doc('Payment Request',pr)
+			finance_book = doc.finance_book
+			dimensions = get_accounting_dimensions()
+			for acc in doc.payment_request_item:
+				if acc.account:
+					total_debit = acc.now_being_request
+					total_credit = 0.0
+					if acc.now_being_request < 0:
+						total_credit = abs(acc.now_being_request)
+						total_debit = 0.0
+
+					temp_dict = {
+						'account': acc.account,
+						'cost_center': acc.cost_center,
+						'finance_book': acc.finance_book,
+						'reference_name': doc.name,
+						'reference_type': 'Payment Request',
+						'debit_in_account_currency': total_debit,
+						'credit_in_account_currency': total_credit,
+						'party_type':acc.party_type,
+						'party':acc.party,
+						'user_remark': acc.remarks
+					}
+
+					for dimension in dimensions:
+						if acc.get(dimension):
+							temp_dict[dimension] = acc.get(dimension)
+
+					je.append("accounts", temp_dict)
+
+		je.append("accounts", {
+			'account': frappe.db.get_value("Mode of Payment Account",
+					{"parent": doc.mode_of_payment, "company": company}, "default_account"),
+			'cost_center': doc.cost_center,
+			'finance_book': doc.finance_book,
+			'reference_name': doc.name,
+			'reference_type': 'Payment Request',
+			'credit_in_account_currency': doc.total_now_being_requested,
+			'debit_in_account_currency': 0.0,
+			'user_remark': doc.reimbursement_type
+		})
+
+	je.finance_book = finance_book
+	je.flags.ignore_permissions = True
+	je.insert()
+	je.save()
+
+	if show_msg:
+		frappe.db.commit()
+
+	if je:
+		for pr in pr_name:
+			if pr:
+				doc = frappe.get_doc('Payment Request', pr)
+				if doc.docstatus == 0:
+					doc.submit()
+		if show_msg:
+			frappe.db.commit()
+			frappe.msgprint("Journal Entry record successfully created!")
+		else:
+			return doc
+	else:
+		return False
+
+@frappe.whitelist()
 def make_payment_entries(docnames = None):
 	if not docnames:
 		return 
@@ -319,10 +439,19 @@ def make_payment_entries(docnames = None):
 	for name in docnames:
 		PaymentRequest.create_payment_entry = create_payment_entry
 		doc = frappe.get_doc("Payment Request", name)
+		#validate
+		if doc.docstatus == 2:
+			frappe.throw(_("Payment Request {0} is cancelled.").format(name))
+		if doc.workflow_state != "Final Approval":
+			frappe.throw(_("Payment Request {0} workflow status must be 'Final Approval'.").format(name))
 		payment_entry = doc.create_payment_entry(submit=False)
 		payment_entry.finance_book = doc.get("finance_book")
-		payment_entry.insert(ignore_permissions=True)
+		#payment_entry.insert(ignore_permissions=True)
 		doclist.append(payment_entry)
+
+		#submit the pwa
+		if doc.docstatus == 0:
+			doc.submit()
 
 	return doclist
 
@@ -430,6 +559,7 @@ def create_payment_entry(self, submit=True):
 		pe.setup_party_account_field()
 		pe.set_missing_values()
 		pe.set_exchange_rate()
+		pe.flags.ignore_mandatory = True
 		pe.insert(ignore_permissions=True)
 		if submit:
 			pe.submit()
@@ -846,3 +976,20 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 		pe.set_exchange_rate()
 		pe.set_amounts()
 	return pe
+
+@frappe.whitelist()
+def get_department_manager(department):
+	department_manager = None
+	if department:
+		department_manager = frappe.db.get_value(
+			"Department Approver",
+			{"parent": department, "parentfield": "expense_approvers", "idx": 1},
+			"approver",
+		)
+	
+	if not department_manager:
+		frappe.throw(
+            _("Department Manager does not exist in the department.<br>Please contact the ERP Team to update the Department Manager.")
+        )
+
+	return department_manager

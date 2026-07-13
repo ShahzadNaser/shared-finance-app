@@ -27,8 +27,8 @@ app_license = "MIT"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {"Payment Request": "public/js/payment_request.js"
-            }
+doctype_js = {"Payment Request": "public/js/payment_request.js",
+              "Purchase Order": "public/js/purchase_order.js"}
 doctype_list_js = {"Payment Request": "public/js/payment_request_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -83,7 +83,7 @@ doctype_list_js = {"Payment Request": "public/js/payment_request_list.js"}
 
 doc_events = {
     "Payment Request": {
-        "on_submit": "shared_finance_app.overrides_class.payment_request.on_submit_via_hooks",
+        #"on_submit": "shared_finance_app.overrides_class.payment_request.on_submit_via_hooks",
         "on_cancel": "shared_finance_app.overrides_class.payment_request.on_cancel",
     },
 }
@@ -98,7 +98,7 @@ override_doctype_dashboards = {
 }
 
 
-# after_migrate = "shared_finance_app.utils.migrate.after_migrate"
+after_migrate = "shared_finance_app.utils.migrate.after_migrate"
 
 
 # Scheduled Tasks

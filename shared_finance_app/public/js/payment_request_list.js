@@ -1,13 +1,27 @@
 frappe.listview_settings['Payment Request']["onload"] = function (doclist) {
+		const validate_selected_docs = (selected_docs) => {
+			for (let doc of selected_docs) {
+				// Check if document is cancelled (docstatus === 2)
+				if (doc.docstatus === 2) {
+					frappe.throw(__("Row {0}: Cannot process Cancelled documents.", [doc.name]));
+				}
+				// Check if workflow state is exactly "Final Approval"
+				// if (doc.workflow_state !== "Final Approval") {
+				// 	frappe.throw(__("Row {0}: Workflow State must be 'Final Approval'. Current state: {1}", [doc.name, doc.workflow_state]));
+				// }
+			}
+		};
+
         const make_payment_entry = () => {
 			const selected_docs = doclist.get_checked_items();
 			const docnames = doclist.get_checked_items(true);
 
 			if (selected_docs.length > 0) {
+				//validate
+				validate_selected_docs(selected_docs);
+
 				for (let doc of selected_docs) {
-					if (!doc.docstatus) {
-						frappe.throw(__("Cannot create a Payment Entry from Draft documents."));
-					}else if(!doc.payment_gateway_account && doc.pay_to_party == 1){
+					if (!doc.payment_gateway_account && doc.pay_to_party == 1) {
 						frappe.throw(__("Document status must be Initiated."));
 					}
 				};
@@ -31,16 +45,17 @@ frappe.listview_settings['Payment Request']["onload"] = function (doclist) {
 			const docnames = doclist.get_checked_items(true);
 
 			if (selected_docs.length > 0) {
+				//validate
+				validate_selected_docs(selected_docs);
+				
 				for (let doc of selected_docs) {
-					if (!doc.docstatus) {
-						frappe.throw(__("Cannot create a Journal Entry from Draft documents."));
-					}else if(doc.pay_to_party){
+					if(doc.pay_to_party){
 						frappe.throw(__("Pay To Party must be uncheck."));
 					}
 				};
 
 				frappe.call({
-					method: "shared_finance_app.overrides_class.payment_request.make_journal_entries",
+					method: "shared_finance_app.overrides_class.payment_request.make_common_journal_entries",
 					args: {"docnames": docnames},
 					freeze: true,
 					callback: function(r){

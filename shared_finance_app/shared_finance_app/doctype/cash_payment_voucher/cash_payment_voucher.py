@@ -24,6 +24,20 @@ class CashPaymentVoucher(Document):
 		# self.total = total
 		self.total_amount_in_words = money_in_words(self.total)
 		self.calculate_total()
+
+		# 1. Prepare field_a and field_b
+		field_a = self.total or ""
+		remarks_list = [row.description for row in self.get("cash_payment_voucher_account") if row.description]
+		field_b = ", ".join(remarks_list) if remarks_list else ""
+        
+        # 2. Construct the fresh title based on current form values
+		raw_title = f"{field_a} - {field_b}".strip(" - ")
+		new_title = raw_title[:139] # Safe truncation for Data field (140 max)
+        
+        # Update if custom_title is empty OR if the current values don't match the existing title
+		if not self.custom_title or not self.custom_title.strip() or self.custom_title != new_title:
+			self.custom_title = new_title
+
  	# self.updat_row_cost_center()
 
 	# def updat_row_cost_center(self):
