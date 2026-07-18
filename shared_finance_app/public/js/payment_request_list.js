@@ -5,10 +5,10 @@ frappe.listview_settings['Payment Request']["onload"] = function (doclist) {
 				if (doc.docstatus === 2) {
 					frappe.throw(__("Row {0}: Cannot process Cancelled documents.", [doc.name]));
 				}
-				// Check if workflow state is exactly "Final Approval"
-				// if (doc.workflow_state !== "Final Approval") {
-				// 	frappe.throw(__("Row {0}: Workflow State must be 'Final Approval'. Current state: {1}", [doc.name, doc.workflow_state]));
-				// }
+				// Check if workflow state is exactly "Final Approved"
+				if (doc.workflow_state !== "Final Approved") {
+					frappe.throw(__("Row {0}: Workflow State must be 'Final Approved'. Current state: {1}", [doc.name, doc.workflow_state]));
+				}
 			}
 		};
 

@@ -334,8 +334,8 @@ def make_common_journal_entries(docnames = None):
         # Backend safety checks
 		if doc.docstatus == 2:
 			frappe.throw(_("Payment Request {0} is cancelled.").format(name))
-		if doc.workflow_state != "Final Approval":
-			frappe.throw(_("Payment Request {0} workflow status must be 'Final Approval'.").format(name))
+		if doc.workflow_state != "Final Approved":
+			frappe.throw(_("Payment Request {0} workflow status must be 'Final Approved'.").format(name))
 		if doc.pay_to_party:
 			frappe.throw(_("Pay To Party must be unchecked for {0}.").format(name))
 		
@@ -442,8 +442,8 @@ def make_payment_entries(docnames = None):
 		#validate
 		if doc.docstatus == 2:
 			frappe.throw(_("Payment Request {0} is cancelled.").format(name))
-		if doc.workflow_state != "Final Approval":
-			frappe.throw(_("Payment Request {0} workflow status must be 'Final Approval'.").format(name))
+		if doc.workflow_state != "Final Approved":
+			frappe.throw(_("Payment Request {0} workflow status must be 'Final Approved'.").format(name))
 		payment_entry = doc.create_payment_entry(submit=False)
 		payment_entry.finance_book = doc.get("finance_book")
 		#payment_entry.insert(ignore_permissions=True)
