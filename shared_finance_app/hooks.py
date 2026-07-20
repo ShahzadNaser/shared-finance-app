@@ -69,13 +69,15 @@ doctype_list_js = {"Payment Request": "public/js/payment_request_list.js"}
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+permission_query_conditions = {
+	"Cash Payment Voucher": "shared_finance_app.permissions.permission_query_conditions_cpv",
+	"Payment Request": "shared_finance_app.permissions.permission_query_conditions_pwa"
+}
+
+has_permission = {
+	"Cash Payment Voucher": "shared_finance_app.permissions.has_permission_cpv",
+	"Payment Request": "shared_finance_app.permissions.has_permission_pwa"
+}
 
 # Document Events
 # ---------------

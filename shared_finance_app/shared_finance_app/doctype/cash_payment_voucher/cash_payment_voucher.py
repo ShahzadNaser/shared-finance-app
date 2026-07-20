@@ -572,9 +572,10 @@ def make_journal_voucher(docnames = None, show_msg=True):
 							if d.ledger_account and d.gross_amount > 0.0:
 								debit_entry = ({
 								'account': d.ledger_account,
-								"party_type": cpv.party_type,
-								"party": cpv.pay_to,
-								'branch': cpv.location,
+								'party_type': cpv.party_type,
+								'party': cpv.pay_to,
+								'branch': d.branch,
+								'division': d.custom_division,
 								'debit_in_account_currency': flt(d.net_amount),
 								'credit_in_account_currency': 0.0,
 								'cost_center' : d.cost_center,
@@ -582,8 +583,8 @@ def make_journal_voucher(docnames = None, show_msg=True):
 								'reference_name': cpv.name
 								})
 
-								for dimension in accounting_dimensions:
-									debit_entry.update({dimension: d.get(dimension)})
+								# for dimension in accounting_dimensions:
+								# 	debit_entry.update({dimension: d.get(dimension)})
 
 								accounts.append(debit_entry)
 
@@ -592,25 +593,31 @@ def make_journal_voucher(docnames = None, show_msg=True):
 									for tax in vat_account_table.taxes:
 										debit_entry_tax = ({
 											'account': tax.tax_type,
-											"debit_in_account_currency": d.vat_amount,
+											'debit_in_account_currency': d.vat_amount,
+											'branch': d.branch,
+											'division': d.custom_division,
+											'cost_center' : d.cost_center,
 											'reference_type': cpv.doctype,
 											'reference_name': cpv.name
 										})
 
-									for dimension in accounting_dimensions:
-										debit_entry_tax.update({dimension: d.get(dimension)})
+									# for dimension in accounting_dimensions:
+									# 	debit_entry_tax.update({dimension: d.get(dimension)})
 
 									accounts.append(debit_entry_tax)
 
-					accounts.append(cpv.update_accounting_dimensions({
-					'account': frappe.db.get_value('Mode of Payment Account', {'parent': cpv.mode_of_payment,'company': cpv.company}, ['default_account']),
-					'credit_in_account_currency': flt(cpv.total),
-					'debit_in_account_currency': 0.0,
-					'branch': cpv.location,
-					'cost_center' : cpv.cost_center,
-					'reference_type': cpv.doctype,
-					'reference_name': cpv.name
-					}, accounting_dimensions))
+					credit_entry = ({
+						'account': frappe.db.get_value('Mode of Payment Account', {'parent': cpv.mode_of_payment,'company': cpv.company}, ['default_account']),
+						'credit_in_account_currency': flt(cpv.total),
+						'debit_in_account_currency': 0.0,
+						'branch': cpv.branch,
+						'division': cpv.custom_division,
+						'cost_center' : cpv.cost_center,
+						'reference_type': cpv.doctype,
+						'reference_name': cpv.name
+					})
+
+					accounts.append(credit_entry)
 					cpv.auto_create_jv = 0
 					cpv.save()
 
@@ -630,14 +637,15 @@ def make_journal_voucher(docnames = None, show_msg=True):
 								'debit_in_account_currency': flt(d.net_amount),
 								'credit_in_account_currency': 0.0,
 								'department': cpv.pay_to,
-								'branch': cpv.location,
-								'cost_center' : cpv.cost_center,
+								'branch': d.branch,
+								'division': d.custom_division,
+								'cost_center' : d.cost_center,
 								'reference_type': cpv.doctype,
 								'reference_name': cpv.name
 								})
 
-								for dimension in accounting_dimensions:
-									debit_entry.update({dimension: d.get(dimension)})
+								# for dimension in accounting_dimensions:
+								# 	debit_entry.update({dimension: d.get(dimension)})
 
 								accounts.append(debit_entry)
 
@@ -647,25 +655,31 @@ def make_journal_voucher(docnames = None, show_msg=True):
 										debit_entry_tax = ({
 											'account': tax.tax_type,
 											"debit_in_account_currency": d.vat_amount,
+											'branch': d.branch,
+											'division': d.custom_division,
+											'cost_center' : d.cost_center,
 											'reference_type': cpv.doctype,
 											'reference_name': cpv.name
 										})
 								
-									for dimension in accounting_dimensions:
-										debit_entry_tax.update({dimension: d.get(dimension)})
+									# for dimension in accounting_dimensions:
+									# 	debit_entry_tax.update({dimension: d.get(dimension)})
 
 									accounts.append(debit_entry_tax)		
-									
-					accounts.append(cpv.update_accounting_dimensions({
-					'account': frappe.db.get_value('Mode of Payment Account', {'parent': cpv.mode_of_payment,'company': cpv.company}, ['default_account']),
-					'credit_in_account_currency': flt(cpv.total) ,
-					'debit_in_account_currency': 0.0,
-					'department': cpv.pay_to,
-					'branch': cpv.location,
-					'cost_center' : cpv.cost_center,
-					'reference_type': cpv.doctype,
-					'reference_name': cpv.name
-					}, accounting_dimensions))
+
+					credit_entry = ({
+						'account': frappe.db.get_value('Mode of Payment Account', {'parent': cpv.mode_of_payment,'company': cpv.company}, ['default_account']),
+						'credit_in_account_currency': flt(cpv.total) ,
+						'debit_in_account_currency': 0.0,
+						'department': cpv.pay_to,
+						'branch': cpv.branch,
+						'division': cpv.custom_division,
+						'cost_center' : cpv.cost_center,
+						'reference_type': cpv.doctype,
+						'reference_name': cpv.name
+					})
+
+					accounts.append(credit_entry)
 					cpv.auto_create_jv = 0
 					cpv.save()
 

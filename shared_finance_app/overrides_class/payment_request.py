@@ -332,10 +332,12 @@ def make_common_journal_entries(docnames = None):
 		doc = frappe.get_doc("Payment Request", name)
         
         # Backend safety checks
+		if doc.docstatus == 1:
+			frappe.throw(_("Entry already for Payment Withdrawal Approval {0}.").format(name))
 		if doc.docstatus == 2:
-			frappe.throw(_("Payment Request {0} is cancelled.").format(name))
+			frappe.throw(_("Payment Withdrawal Approval {0} is cancelled.").format(name))
 		if doc.workflow_state != "Final Approved":
-			frappe.throw(_("Payment Request {0} workflow status must be 'Final Approved'.").format(name))
+			frappe.throw(_("Payment Withdrawal Approval {0} workflow status must be 'Final Approved'.").format(name))
 		if doc.pay_to_party:
 			frappe.throw(_("Pay To Party must be unchecked for {0}.").format(name))
 		
@@ -347,28 +349,25 @@ def make_common_journal_entries(docnames = None):
 @frappe.whitelist()
 def make_common_journal_voucher(pr_name, doc=None, show_msg=True):
 	company = frappe.defaults.get_defaults().company
-	from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import get_accounting_dimensions
-	finance_book = None
 
 	je = frappe.new_doc('Journal Entry')
 	je.voucher_type = 'Journal Entry'
 	je.posting_date = nowdate()
 	je.company =  company
 	if len(pr_name) == 1:
-		je.cheque_no = pr_name[0]
-		je.user_remark = f"PWA: {pr_name[0]}"
+		je.cheque_no = f"PWA: {pr_name[0]}"
+		je.user_remark = frappe.get_value("Payment Request", pr_name[0], "remark_")
 	else:
 		# Join multiple records with a comma separation string
 		combined_names = ", ".join(str(name) for name in pr_name)
-		je.cheque_no = combined_names
-		je.user_remark = f"Multiple PWAs: {combined_names}"
+		je.cheque_no = f"Multiple PWAs: {combined_names}"
+		combined_remarks = ", ".join(str(frappe.get_value("Payment Request", name, "remark_")) for name in pr_name)
+		je.user_remark = combined_remarks
 	je.cheque_date = nowdate()
 
 	for pr in pr_name:
 		if pr:
 			doc = frappe.get_doc('Payment Request',pr)
-			finance_book = doc.finance_book
-			dimensions = get_accounting_dimensions()
 			for acc in doc.payment_request_item:
 				if acc.account:
 					total_debit = acc.now_being_request
@@ -379,8 +378,9 @@ def make_common_journal_voucher(pr_name, doc=None, show_msg=True):
 
 					temp_dict = {
 						'account': acc.account,
+						'branch': acc.branch,
+						'division': acc.custom_division,
 						'cost_center': acc.cost_center,
-						'finance_book': acc.finance_book,
 						'reference_name': doc.name,
 						'reference_type': 'Payment Request',
 						'debit_in_account_currency': total_debit,
@@ -390,25 +390,26 @@ def make_common_journal_voucher(pr_name, doc=None, show_msg=True):
 						'user_remark': acc.remarks
 					}
 
-					for dimension in dimensions:
-						if acc.get(dimension):
-							temp_dict[dimension] = acc.get(dimension)
+					# for dimension in dimensions:
+					# 	if acc.get(dimension):
+					# 		temp_dict[dimension] = acc.get(dimension)
 
 					je.append("accounts", temp_dict)
 
-		je.append("accounts", {
-			'account': frappe.db.get_value("Mode of Payment Account",
-					{"parent": doc.mode_of_payment, "company": company}, "default_account"),
-			'cost_center': doc.cost_center,
-			'finance_book': doc.finance_book,
-			'reference_name': doc.name,
-			'reference_type': 'Payment Request',
-			'credit_in_account_currency': doc.total_now_being_requested,
-			'debit_in_account_currency': 0.0,
-			'user_remark': doc.reimbursement_type
-		})
+			je.append("accounts", {
+				'account': frappe.db.get_value("Mode of Payment Account",
+						{"parent": doc.mode_of_payment, "company": company}, "default_account"),
+				'cost_center': doc.cost_center,
+				'branch': doc.branch,
+				'division': doc.division,
+				'reference_name': doc.name,
+				'reference_type': 'Payment Request',
+				'credit_in_account_currency': doc.total_now_being_requested,
+				'debit_in_account_currency': 0.0,
+				'user_remark': doc.reimbursement_type
+			})
+			
 
-	je.finance_book = finance_book
 	je.flags.ignore_permissions = True
 	je.insert()
 	je.save()

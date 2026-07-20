@@ -1,11 +1,17 @@
 frappe.listview_settings['Payment Request']["onload"] = function (doclist) {
 		const validate_selected_docs = (selected_docs) => {
 			for (let doc of selected_docs) {
-				// Check if document is cancelled (docstatus === 2)
-				if (doc.docstatus === 2) {
-					frappe.throw(__("Row {0}: Cannot process Cancelled documents.", [doc.name]));
+				// 1. Check if document is already submitted (docstatus === 1)
+				if (doc.docstatus === 1) {
+					frappe.throw(__("Row {0}: Cannot process Submitted documents. Please uncheck them first.", [doc.name]));
 				}
-				// Check if workflow state is exactly "Final Approved"
+				
+				// 2. Check if document is cancelled (docstatus === 2)
+				if (doc.docstatus === 2) {
+					frappe.throw(__("Row {0}: Cannot process Cancelled documents. Please uncheck them first.", [doc.name]));
+				}
+				
+				// 3. Check if workflow state is exactly "Final Approved"
 				if (doc.workflow_state !== "Final Approved") {
 					frappe.throw(__("Row {0}: Workflow State must be 'Final Approved'. Current state: {1}", [doc.name, doc.workflow_state]));
 				}

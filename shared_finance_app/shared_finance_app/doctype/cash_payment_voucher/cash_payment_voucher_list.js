@@ -69,6 +69,10 @@ frappe.listview_settings['Cash Payment Voucher']["onload"] = function (doclist) 
 
 		if (selected_docs.length > 0) {
 			for (let doc of selected_docs) {
+				if (doc.docstatus === 1) {
+					frappe.throw(__("Row {0}: Cannot create a Journal Entry from Submitted documents. Please uncheck them first.", [doc.name]));
+				}
+
 				if (doc.docstatus === 2) {
 					frappe.throw(__("Row {0}: Cannot create a Journal Entry from Cancelled documents. Please uncheck them first.", [doc.name]));
 				}
