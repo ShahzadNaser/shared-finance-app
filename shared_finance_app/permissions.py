@@ -20,7 +20,7 @@ def has_permission_pwa(doc, user=None, permission_type=None):
     if "Finance Support" in frappe.get_roles (frappe.session.user):
         return 
 
-    if doc.get("department") == 'Finance Support - OMATRA':
+    if doc.get("custom_department") == 'Finance Support - OMATRA':
         return False
     return 
 
@@ -28,4 +28,4 @@ def permission_query_conditions_pwa(user=None):
     if "Finance Support" in frappe.get_roles (frappe.session.user):
         return 
     
-    return f"(ifnull(`tabPayment Request`.department, '')='' or `tabPayment Request`.department != 'Finance Support - OMATRA')"
+    return f"(ifnull(`tabPayment Request`.custom_department, '')='' or `tabPayment Request`.custom_department != 'Finance Support - OMATRA')"
