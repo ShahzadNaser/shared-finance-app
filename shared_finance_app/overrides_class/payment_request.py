@@ -24,7 +24,7 @@ class CustomPaymentRequest(PaymentRequest):
 		# self.validate_reference_doc()
 
 		# 1. Prepare field_a and field_b
-		field_a = self.total_now_being_requested or ""
+		field_a = f"{self.total_now_being_requested:.2f} SR" if self.total_now_being_requested else ""
 		field_b = self.reimbursement_type or ""
         
         # 2. Construct the fresh title based on current form values
@@ -64,8 +64,12 @@ class CustomPaymentRequest(PaymentRequest):
 			for row in self.payment_request_reference:
 				self.grand_total += row.allocated_amount or 0
 			self.total_now_being_requested = self.grand_total
-		self.wire_transfer=self.grand_total
+		if flt(self.through_cheque) == 0:
+			self.wire_transfer=self.grand_total
 
+		paid_amount = flt(self.wire_transfer) + flt(self.through_cheque)
+		if paid_amount != self.total_now_being_requested:
+			frappe.throw(_("Total of Wire Transfer and Cheque Amount must be equal to Total Now Being Requested"))
 
 
 

@@ -26,7 +26,7 @@ class CashPaymentVoucher(Document):
 		self.calculate_total()
 
 		# 1. Prepare field_a and field_b
-		field_a = self.total or ""
+		field_a = f"{self.total:.2f} SR" if self.total else ""
 		remarks_list = [row.description for row in self.get("cash_payment_voucher_account") if row.description]
 		field_b = ", ".join(remarks_list) if remarks_list else ""
         
