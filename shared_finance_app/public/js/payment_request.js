@@ -17,6 +17,45 @@ frappe.ui.form.on('Payment Request', {
 			};
 		});
 
+          frm.set_query("account", "payment_request_item", function(doc, cdt, cdn) {
+               var d = locals[cdt][cdn];
+               return{
+                    filters: [
+                         ['Account', 'company', '=', doc.company],
+                         ['Account', 'is_group', '=', 0]
+                    ]
+               };
+          });
+
+          frm.set_query("cost_center", "payment_request_item", function(doc, cdt, cdn) {
+               var d = locals[cdt][cdn];
+               return{
+                    filters: [
+                         ['Cost Center', 'company', '=', doc.company],
+                         ['Cost Center', 'is_group', '=', 0]
+                    ]
+               };
+          });
+
+          frm.set_query("department", "payment_request_item", function(doc, cdt, cdn) {
+               var d = locals[cdt][cdn];
+               return{
+                    filters: [
+                         ['Department', 'company', '=', doc.company],
+                         ['Department', 'is_group', '=', 0]
+                    ]
+               };
+          });
+
+          frm.set_query('cost_center', function() {
+               return {
+                    filters: [
+                         ['Cost Center', 'company', '=', frm.doc.company],
+                         ['Cost Center', 'is_group', '=', 0]
+                    ]
+               };
+          });
+
           frm.set_df_property("grand_total", "read_only", 0);
           if(frm.doc.pay_to_party === 0)
                frm.set_df_property("grand_total", "read_only", 1);
@@ -63,6 +102,27 @@ frappe.ui.form.on('Payment Request', {
           //      }).addClass("btn-primary");
           // }
           frm.trigger("update_employee");
+
+          let help_box = frm.get_field('custom_department_manager').$wrapper.find('.help-box');
+        
+          if (help_box.length) {
+               // Appling color
+               help_box[0].style.setProperty('color', '#2490EF', 'important');
+               help_box[0].style.setProperty('font-weight', 'bold', 'important');
+          }
+          
+          frm.set_query('custom_department', function() {
+               return {
+                    filters: [
+                         ['Department', 'is_group', '!=', 1],
+                         ['Department', 'company', '=', frm.doc.company]
+                    ]
+               };
+          });
+
+          if(frm.doc.department){
+               frm.trigger("set_department_manager");
+          }
 
      },
      onload: function(frm) {
@@ -150,30 +210,46 @@ frappe.ui.form.on('Payment Request', {
                     item.employee = "";
                });
           }
-     }
+     },
+     custom_department: function(frm) {
+          frm.trigger("set_department_manager");
+     },
+     set_department_manager: function(frm) {
+		if (frm.doc.custom_department) {
+			return frappe.call({
+				method: 'shared_finance_app.overrides_class.payment_request.get_department_manager',
+				args: {
+					"department": frm.doc.custom_department,
+				},
+				callback: function(r) {
+					if (r && r.message) {
+                              if (frm.doc.custom_department_manager !== r.message) {
+						     frm.set_value('custom_department_manager', r.message);
+                              }
+					}
+				}
+			});
+		}
+	}
 });
 
 
 frappe.ui.form.on('Payment Request Item', {
-   account: function (frm, cdt, cdn) {
+     account: function (frm, cdt, cdn) {
         set_finance_book(frm, cdt, cdn)
      },
-   amount: function(frm, cdt, cdn) {
-     calc_balance(frm, cdt, cdn)    
+     amount: function(frm, cdt, cdn) {
+          calc_balance(frm, cdt, cdn)
 
-   },
-    amount: function(frm, cdt, cdn) {
-     calc_balance(frm, cdt, cdn)
+     },
+     less_advance_paid: function (frm, cdt, cdn) {
+          calc_balance(frm, cdt, cdn)        
 
-   },
-   less_advance_paid: function (frm, cdt, cdn) {
-      calc_balance(frm, cdt, cdn)        
+     },
+     now_being_request: function (frm, cdt, cdn) {
+          calc_balance(frm, cdt, cdn)        
 
-    },
-   now_being_request: function (frm, cdt, cdn) {
-     calc_balance(frm, cdt, cdn)        
-
-    },
+     },
      employee: function(frm, cdt, cdn) {
           let child = locals[cdt][cdn]; 
           if(child.employee){

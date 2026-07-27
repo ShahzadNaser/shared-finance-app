@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "allow_auto_repeat": 1,
  "autoname": "ACC-CPV-.YYYY.-.#####",
  "creation": "2021-02-04 18:15:23.432938",
@@ -105,7 +106,6 @@
    "fieldtype": "Link",
    "label": "Company",
    "options": "Company",
-   "read_only": 1,
    "reqd": 1
   },
   {
@@ -127,7 +127,6 @@
   {
    "fieldname": "mode_of_payment",
    "fieldtype": "Link",
-   "hidden": 1,
    "label": "Mode of Payment",
    "options": "Mode of Payment"
   },
@@ -148,8 +147,6 @@
   {
    "fieldname": "finance_book",
    "fieldtype": "Link",
-   "in_list_view": 0,
-   "in_standard_filter": 0,
    "hidden": 1,
    "label": "Finance Book",
    "options": "Finance Book"
@@ -241,10 +238,12 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2022-09-11 12:20:23.018236",
+ "links": [],
+ "modified": "2026-07-27 13:23:50.376138",
  "modified_by": "Administrator",
  "module": "Shared Finance App",
  "name": "Cash Payment Voucher",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
@@ -291,8 +290,10 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1,
  "track_seen": 1,
  "track_views": 1

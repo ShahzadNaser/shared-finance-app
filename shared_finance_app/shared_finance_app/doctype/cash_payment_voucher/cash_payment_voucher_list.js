@@ -69,8 +69,18 @@ frappe.listview_settings['Cash Payment Voucher']["onload"] = function (doclist) 
 
 		if (selected_docs.length > 0) {
 			for (let doc of selected_docs) {
-				if (doc.docstatus != 0) {
-					frappe.throw(__("Cannot create a Journal Entry from Submitted / Cancelled documents. Please uncheck them first"));
+				if (doc.docstatus === 1) {
+					frappe.throw(__("Row {0}: Cannot create a Journal Entry from Submitted documents. Please uncheck them first.", [doc.name]));
+				}
+
+				if (doc.docstatus === 2) {
+					frappe.throw(__("Row {0}: Cannot create a Journal Entry from Cancelled documents. Please uncheck them first.", [doc.name]));
+				}
+
+				// Validate Workflow State
+				const allowed_states = ["Final Approved"];
+				if (!doc.workflow_state || !allowed_states.includes(doc.workflow_state)) {
+					frappe.throw(__("Row {0}: Workflow State must be 'Final Approved'. Current state: {1}", [doc.name, doc.workflow_state || "Draft"]));
 				}
 			};
 

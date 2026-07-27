@@ -35,31 +35,47 @@ cur_frm.set_query("item", "cash_payment_voucher_account", function(doc, cdt, cdn
 
 frappe.ui.form.on("Cash Payment Voucher", {
 	refresh: (frm) => {
-		if(typeof(frm.doc.__islocal) == "undefined"){
-			// console.log("Yes");
-			frm.set_df_property('mode_of_payment',  'hidden',  0);
-			frm.set_df_property('finance_book',  'hidden',  0);
-			if(frappe.user.has_role('Accounts Manager') || frappe.user.has_role('Payroll & Payables') || 
-			frappe.user.has_role('Accounts payable') || frappe.user.has_role('Accounts User') ||
-			frappe.user.has_role('Sales & Receivable Manager') || frappe.user.has_role('Sales & Receivable')){
-				var df_ledger_account = frappe.meta.get_docfield("Cash Payment Voucher Account","ledger_account", cur_frm.doc.name);
-				df_ledger_account.read_only = 0;
-				var df_item = frappe.meta.get_docfield("Cash Payment Voucher Account","item", cur_frm.doc.name);
-				df_item.read_only = 0;
-			}
+		frm.trigger("clear_employee");
+
+		set_party_filter(frm);
+		set_company_filters(frm);
+
+		let help_box = frm.get_field('custom_department_manager').$wrapper.find('.help-box');
+        
+		if (help_box.length) {
+			// Appling color
+			help_box[0].style.setProperty('color', '#2490EF', 'important');
+			help_box[0].style.setProperty('font-weight', 'bold', 'important');
 		}
-		// setTimeout(function () {
-			frm.trigger("clear_employee");
-		// },300);
+
+		if(frm.doc.department){
+			frm.trigger("set_department_manager");
+		}
+	},
+	company: (frm, cdt, cdn) => {
+		frm.set_value("party_type", "");
+		frm.set_value("pay_to", "");
+        frm.set_value("party_name", "");
+		frm.set_value("cost_center", "");
+        frm.set_value("department", "");
+        
+        // Re-apply filter
+        set_party_filter(frm);
+		set_company_filters(frm);
 	},
 	pay_to: (frm, cdt, cdn) => {
-		cur_frm.add_fetch('pay_to',  'finance_book',  'finance_book');
 		set_party_name(frm);
-
+		if (frm.doc.party_type === "Department" && frm.doc.pay_to) {
+            frm.set_value("department", frm.doc.pay_to);
+        } else {
+			frm.set_value("department", "");
+		}
 	},
 	party_type: (frm, cdt, cdn) => {
 		frm.set_value("pay_to","");
 		frm.set_value("party_name","");
+
+		set_party_filter(frm);
 	},
 
 	party_name: (frm, cdt, cdn) =>{
@@ -92,6 +108,30 @@ frappe.ui.form.on("Cash Payment Voucher", {
         });
         frm.refresh_fields();
 	},
+	department: (frm, cdt, cdn) => {
+		$.each(frm.doc.cash_payment_voucher_account,  function(i,  d) {
+            d.department = frm.doc.department;
+        });
+        frm.refresh_fields();
+		frm.trigger("set_department_manager");
+	},
+    set_department_manager: function(frm) {
+		if (frm.doc.department) {
+			return frappe.call({
+				method: 'shared_finance_app.overrides_class.payment_request.get_department_manager',
+				args: {
+					"department": frm.doc.department,
+				},
+				callback: function(r) {
+					if (r && r.message) {
+						if (frm.doc.custom_department_manager !== r.message) {
+							frm.set_value('custom_department_manager', r.message);
+						}
+					}
+				}
+			});
+		}
+	},
 	location: (frm, cdt, cdn) => {
 		$.each(frm.doc.cash_payment_voucher_account,  function(i,  d) {
             d.branch = frm.doc.location;
@@ -100,21 +140,6 @@ frappe.ui.form.on("Cash Payment Voucher", {
 	},
 	validate: (frm, cdt, cdn) => {
 		set_party_name(frm);
-	},
-	after_save: (frm, cdt, cdn) => {
-		if(typeof(frm.doc.__islocal) == "undefined"){
-			// console.log("Yes");
-			frm.set_df_property('mode_of_payment',  'hidden',  0);
-			frm.set_df_property('finance_book',  'hidden',  0);
-			if(frappe.user.has_role('Accounts Manager') || frappe.user.has_role('Payroll & Payables') || 
-			frappe.user.has_role('Accounts payable') || frappe.user.has_role('Accounts User') ||
-			frappe.user.has_role('Sales & Receivable Manager') || frappe.user.has_role('Sales & Receivable')){
-				var df_ledger_account = frappe.meta.get_docfield("Cash Payment Voucher Account","ledger_account", cur_frm.doc.name);
-				df_ledger_account.read_only = 0;
-				var df_item = frappe.meta.get_docfield("Cash Payment Voucher Account","item", cur_frm.doc.name);
-				df_item.read_only = 0;
-			}
-		}
 	},
 	before_save: function(frm){
 		calculate_total(frm);
@@ -234,6 +259,44 @@ function set_party_name(frm) {
 	}
 }
 
+function set_party_filter(frm) {
+    if (frm.doc.party_type && frm.doc.company && ["Employee", "Department"].includes(frm.doc.party_type)) {
+        frm.set_query("pay_to", function() {
+            return {
+                filters: {
+                    company: frm.doc.company
+                }
+            };
+        });
+    } else {
+        frm.set_query("pay_to", function() { return {}; });
+    }
+}
+
+function set_company_filters(frm) {
+    if (frm.doc.company) {
+        frm.set_query("cost_center", function() {
+            return {
+                filters: {
+                    company: frm.doc.company,
+                    is_group: 0
+                }
+            };
+        });
+
+        frm.set_query("department", function() {
+            return {
+                filters: {
+                    company: frm.doc.company,
+					is_group: 0
+                }
+            };
+        });
+    } else {
+        frm.set_query("cost_center", function() { return {}; });
+        frm.set_query("department", function() { return {}; });
+    }
+}
 // cur_frm.set_query("vat_5", "cash_payment_voucher_account", function (doc, cdt, cdn) {
 // 	return {
 // 		filters: {

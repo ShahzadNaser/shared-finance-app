@@ -28,9 +28,7 @@ app_license = "MIT"
 
 # include js in doctype views
 doctype_js = {"Payment Request": "public/js/payment_request.js",
-              "Employee": "public/js/employee.js"
-
-              }
+              "Purchase Order": "public/js/purchase_order.js"}
 doctype_list_js = {"Payment Request": "public/js/payment_request_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -85,7 +83,7 @@ doctype_list_js = {"Payment Request": "public/js/payment_request_list.js"}
 
 doc_events = {
     "Payment Request": {
-        "on_submit": "shared_finance_app.overrides_class.payment_request.on_submit_via_hooks",
+        #"on_submit": "shared_finance_app.overrides_class.payment_request.on_submit_via_hooks",
         "on_cancel": "shared_finance_app.overrides_class.payment_request.on_cancel",
     },
 }

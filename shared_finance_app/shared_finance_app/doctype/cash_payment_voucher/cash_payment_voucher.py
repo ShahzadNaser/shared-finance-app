@@ -24,6 +24,19 @@ class CashPaymentVoucher(Document):
 		# self.total = total
 		self.total_amount_in_words = money_in_words(self.total)
 		self.calculate_total()
+
+		# 1. Prepare field_a and field_b
+		field_a = f"{self.total:.2f} SR" if self.total else ""
+		remarks_list = [row.description for row in self.get("cash_payment_voucher_account") if row.description]
+		field_b = ", ".join(remarks_list) if remarks_list else ""
+        
+        # 2. Construct the fresh title based on current form values
+		raw_title = f"{field_a} - {field_b}".strip(" - ")
+		new_title = raw_title[:139] # Safe truncation for Data field (140 max)
+        
+        # Update if custom_title is empty OR if the current values don't match the existing title
+		if not self.custom_title or not self.custom_title.strip() or self.custom_title != new_title:
+			self.custom_title = new_title
  	# self.updat_row_cost_center()
 
 	# def updat_row_cost_center(self):
@@ -100,8 +113,8 @@ class CashPaymentVoucher(Document):
 			self.net_amount = flt(net_amount)
 
 	def on_submit(self):
-		if not self.mode_of_payment or not self.finance_book or not self.cost_center:
-			frappe.throw("Mode of Payment, Finance book or Cost Center should not be blank")
+		if not self.mode_of_payment or not self.cost_center:
+			frappe.throw("Mode of Payment or Cost Center should not be blank")
 
 		if self.auto_create_jv == 1:
 			self.make_non_department_jv()
@@ -329,7 +342,7 @@ def getTax_Percent(item_tax_template):
 @frappe.whitelist()
 def getParty_Name(party,party_type):
 	if party and party_type == 'Customer':
-		return frappe.db.get_value("Customer", party, "customer_f_name")
+		return frappe.db.get_value("Customer", party, "customer_name")
 	elif party and party_type == 'Supplier':
 		return frappe.db.get_value("Supplier", party, "supplier_name")	
 	elif party and party_type == 'Employee':
@@ -546,6 +559,7 @@ def make_journal_voucher(docnames = None, show_msg=True):
 	from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import get_accounting_dimensions
 	accounting_dimensions = get_accounting_dimensions() or []
 	accounts = []
+	first_cpv = frappe.get_doc('Cash Payment Voucher',json.loads(docnames)[0]) if docnames else None 
 	if docnames == None:
 		frappe.throw("No Cash payment voucher found to create Journal Entry")
 
@@ -553,7 +567,11 @@ def make_journal_voucher(docnames = None, show_msg=True):
 		doc_name = json.loads(docnames)
 	try:
 		for name in doc_name:
-			cpv = frappe.get_doc('Cash Payment Voucher',name) 
+			cpv = frappe.get_doc('Cash Payment Voucher',name)
+
+			if cpv.company != first_cpv.company:
+				frappe.throw(f"All selected vouchers must belong to the same company ({first_cpv.company})")
+		
 			if cpv.party_type != "Department" and not frappe.db.exists("Journal Entry Account", {'reference_name':cpv.name}):
 				if frappe.db.get_value('Mode of Payment Account', {'parent': cpv.mode_of_payment,'company': cpv.company}, ['default_account']):
 					if cpv.total > 0.0:
@@ -570,7 +588,6 @@ def make_journal_voucher(docnames = None, show_msg=True):
 								'debit_in_account_currency': flt(d.net_amount),
 								'credit_in_account_currency': 0.0,
 								'cost_center' : d.cost_center,
-								'finance_book' : cpv.finance_book,
 								'reference_type': cpv.doctype,
 								'reference_name': cpv.name
 								})
@@ -600,8 +617,7 @@ def make_journal_voucher(docnames = None, show_msg=True):
 					'credit_in_account_currency': flt(cpv.total),
 					'debit_in_account_currency': 0.0,
 					'branch': cpv.location,
-					'cost_center' : cpv.cost_center, 
-					'finance_book' : cpv.finance_book,
+					'cost_center' : cpv.cost_center,
 					'reference_type': cpv.doctype,
 					'reference_name': cpv.name
 					}, accounting_dimensions))
@@ -626,9 +642,9 @@ def make_journal_voucher(docnames = None, show_msg=True):
 								'department': cpv.pay_to,
 								'branch': cpv.location,
 								'cost_center' : cpv.cost_center,
-								'finance_book' : cpv.finance_book,
 								'reference_type': cpv.doctype,
-								'reference_name': cpv.name
+								'reference_name': cpv.name,
+								'user_remark': d.description
 								})
 
 								for dimension in accounting_dimensions:
@@ -658,9 +674,9 @@ def make_journal_voucher(docnames = None, show_msg=True):
 					'department': cpv.pay_to,
 					'branch': cpv.location,
 					'cost_center' : cpv.cost_center,
-					'finance_book' : cpv.finance_book,
 					'reference_type': cpv.doctype,
-					'reference_name': cpv.name
+					'reference_name': cpv.name,
+					'user_remark': cpv.description
 					}, accounting_dimensions))
 					cpv.auto_create_jv = 0
 					cpv.save()
@@ -679,12 +695,11 @@ def make_journal_voucher(docnames = None, show_msg=True):
 		if len(accounts) > 0:
 			journal_entry = frappe.get_doc({
 				'doctype': 'Journal Entry',
-				'company': cpv.company,
+				'company': first_cpv.company,
 				'cheque_no': "Against Multiple CPV",
-				'posting_date': cpv.posting_date,
-				'cheque_date': cpv.posting_date,
-				'cost_center' : cpv.cost_center,
-				'finance_book': cpv.finance_book,
+				'posting_date': first_cpv.posting_date,
+				'cheque_date': first_cpv.posting_date,
+				'cost_center' : first_cpv.cost_center,
 				'accounts': accounts,
 			})
 			journal_entry.insert(ignore_permissions=True,ignore_mandatory=True)
