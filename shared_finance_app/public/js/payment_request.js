@@ -75,8 +75,8 @@ frappe.ui.form.on('Payment Request', {
           frm.set_query('custom_department', function() {
                return {
                     filters: [
-                         ['Department', 'name', '!=', 'All Departments'],
-                         ['Department', 'Company', '=', frm.doc.company]
+                         ['Department', 'name', '=', 0],
+                         ['Department', 'company', '=', frm.doc.company]
                     ]
                };
           });
@@ -198,25 +198,18 @@ frappe.ui.form.on('Payment Request', {
 
 
 frappe.ui.form.on('Payment Request Item', {
-   account: function (frm, cdt, cdn) {
-        set_finance_book(frm, cdt, cdn)
+     account: function (frm, cdt, cdn) {
+          set_finance_book(frm, cdt, cdn)
      },
-   amount: function(frm, cdt, cdn) {
-     calc_balance(frm, cdt, cdn)    
-
-   },
-    amount: function(frm, cdt, cdn) {
-     calc_balance(frm, cdt, cdn)
-
-   },
-   less_advance_paid: function (frm, cdt, cdn) {
-      calc_balance(frm, cdt, cdn)        
-
-    },
-   now_being_request: function (frm, cdt, cdn) {
-     calc_balance(frm, cdt, cdn)        
-
-    },
+     amount: function(frm, cdt, cdn) {
+          calc_balance(frm, cdt, cdn)
+     },
+     less_advance_paid: function (frm, cdt, cdn) {
+          calc_balance(frm, cdt, cdn)
+     },
+     now_being_request: function (frm, cdt, cdn) {
+          calc_balance(frm, cdt, cdn)
+     },
      employee: function(frm, cdt, cdn) {
           let child = locals[cdt][cdn]; 
           if(child.employee){

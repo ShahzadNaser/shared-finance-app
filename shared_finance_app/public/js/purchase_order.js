@@ -16,8 +16,8 @@ frappe.ui.form.on("Purchase Order", {
         frm.set_query('custom_department', function() {
             return {
 				filters: [
-						['Department', 'name', '!=', 'All Departments'],
-						['Department', 'Company', '=', frm.doc.company]
+						['Department', 'name', '=', 0],
+						['Department', 'company', '=', frm.doc.company]
 				]
 			};
 		});
