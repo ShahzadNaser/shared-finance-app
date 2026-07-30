@@ -26,23 +26,19 @@ frappe.listview_settings['Payment Request']["onload"] = function (doclist) {
 				//validate
 				validate_selected_docs(selected_docs);
 
-				for (let doc of selected_docs) {
-					if (!doc.payment_gateway_account && doc.pay_to_party == 1) {
-						frappe.throw(__("Document status must be Initiated."));
-					}
-				};
-
+				// Proceed with server call if validation passes
 				frappe.call({
 					method: "shared_finance_app.overrides_class.payment_request.make_payment_entries",
-					args: {"docnames": docnames},
+					args: { "docnames": docnames },
 					freeze: true,
-					callback: function(r){
-						if(!r.exc) {
+					callback: function(r) {
+						if (!r.exc) {
 							let doc = frappe.model.sync(r.message);
 							frappe.set_route("List", "Payment Entry", "List");
 						}
 					}
 				});
+				
 			};
 		};
 
@@ -53,12 +49,6 @@ frappe.listview_settings['Payment Request']["onload"] = function (doclist) {
 			if (selected_docs.length > 0) {
 				//validate
 				validate_selected_docs(selected_docs);
-				
-				for (let doc of selected_docs) {
-					if(doc.pay_to_party){
-						frappe.throw(__("Pay To Party must be uncheck."));
-					}
-				};
 
 				frappe.call({
 					method: "shared_finance_app.overrides_class.payment_request.make_common_journal_entries",

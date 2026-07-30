@@ -57,8 +57,17 @@ frappe.ui.form.on("Cash Payment Voucher", {
 		frm.set_query('department', function() {
             return {
 				filters: [
-						['Department', 'name', '=', 0],
+						['Department', 'is_group', '=', 0],
 						['Department', 'company', '=', frm.doc.company]
+				]
+			};
+		});
+
+		frm.set_query('cost_center', function() {
+            return {
+				filters: [
+						['Cost Center', 'is_group', '=', 0],
+						['Cost Center', 'company', '=', frm.doc.company]
 				]
 			};
 		});
@@ -67,7 +76,7 @@ frappe.ui.form.on("Cash Payment Voucher", {
 			frm.set_query('pay_to', function() {
 				return {
 					filters: [
-							['Department', 'name', '=', 0],
+							['Department', 'is_group', '=', 0],
 							['Department', 'company', '=', frm.doc.company]
 					]
 				};
@@ -100,7 +109,7 @@ frappe.ui.form.on("Cash Payment Voucher", {
 			frm.set_query('pay_to', function() {
 				return {
 					filters: [
-							['Department', 'name', '=', 0],
+							['Department', 'is_group', '=', 0],
 							['Department', 'company', '=', frm.doc.company]
 					]
 				};

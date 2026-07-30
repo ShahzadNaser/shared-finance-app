@@ -16,7 +16,7 @@ frappe.ui.form.on("Purchase Order", {
         frm.set_query('custom_department', function() {
             return {
 				filters: [
-						['Department', 'name', '=', 0],
+						['Department', 'is_group', '=', 0],
 						['Department', 'company', '=', frm.doc.company]
 				]
 			};

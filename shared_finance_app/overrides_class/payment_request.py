@@ -24,7 +24,7 @@ class CustomPaymentRequest(PaymentRequest):
 		# self.validate_reference_doc()
 
 		# 1. Prepare field_a and field_b
-		field_a = f"{self.total_now_being_requested:.2f} SR" if self.total_now_being_requested else ""
+		field_a = f"{self.total_now_being_requested:,.2f} SAR" if self.total_now_being_requested else ""
 		field_b = self.reimbursement_type or ""
         
         # 2. Construct the fresh title based on current form values
@@ -449,6 +449,8 @@ def make_payment_entries(docnames = None):
 			frappe.throw(_("Payment Request {0} is cancelled.").format(name))
 		if doc.workflow_state != "Final Approved":
 			frappe.throw(_("Payment Request {0} workflow status must be 'Final Approved'.").format(name))
+		if doc.pay_to_party == 0:
+			frappe.throw(_("Pay To Party must be enabled for {0}.").format(name))
 		payment_entry = doc.create_payment_entry(submit=False)
 		payment_entry.finance_book = doc.get("finance_book")
 		#payment_entry.insert(ignore_permissions=True)
@@ -491,6 +493,7 @@ def create_payment_entry(self, submit=True):
 			"reference_date": self.transaction_date,#nowdate(),
 			"posting_date": self.transaction_date,
 			"finance_book": self.finance_book,
+			"custom_remarks": 1,
 			"remarks": self.remark_ #"Payment Entry against {0} {1} via Payment Request {2}".format(self.reference_doctype,self.reference_name, self.name)
 		})
 		payment_entry.finance_book = self.finance_book
@@ -557,6 +560,7 @@ def create_payment_entry(self, submit=True):
 			"reference_date": self.transaction_date,
 			"posting_date": self.transaction_date,
 			"finance_book": self.finance_book,
+			"custom_remarks": 1,
 			"remarks": self.remark_, #"Payment Entry via Payment Request <b>{0}</b>".format(self.name),
 			'references' : references
 		})

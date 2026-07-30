@@ -75,8 +75,17 @@ frappe.ui.form.on('Payment Request', {
           frm.set_query('custom_department', function() {
                return {
                     filters: [
-                         ['Department', 'name', '=', 0],
+                         ['Department', 'is_group', '=', 0],
                          ['Department', 'company', '=', frm.doc.company]
+                    ]
+               };
+          });
+
+          frm.set_query('cost_center', function() {
+               return {
+                    filters: [
+                         ['Cost Center', 'is_group', '=', 0],
+                         ['Cost Center', 'company', '=', frm.doc.company]
                     ]
                };
           });
@@ -106,12 +115,13 @@ frappe.ui.form.on('Payment Request', {
      party_type: function(frm) {
           frm.set_value("party_account","");
           frm.set_value("party","");
+          frm.set_value("party_name","");
           frm.clear_table("payment_request_reference");
           frm.refresh_fields();
      },
      party: function(frm) {
           if (frm.doc.party && frm.doc.party_type && frm.doc.company){
-               return  frappe.call({
+               frappe.call({
                     method: 'erpnext.accounts.party.get_party_account',
                     args: {
                          party_type : frm.doc.party_type,
@@ -120,6 +130,21 @@ frappe.ui.form.on('Payment Request', {
                     },
                     callback: function(r, rt) {
                         frm.set_value("party_account",r.message);
+                    }
+               });
+
+               const name_field_map = {
+                    "Customer": "customer_name",
+                    "Supplier": "supplier_name",
+                    "Employee": "employee_name",
+                    "Shareholder": "title"
+               };
+
+               const fetch_field = name_field_map[frm.doc.party_type];
+
+               frappe.db.get_value(frm.doc.party_type, frm.doc.party, fetch_field, (r) => {
+                    if (r && r[fetch_field]) {
+                         frm.set_value("party_name", r[fetch_field]);
                     }
                });
           }
