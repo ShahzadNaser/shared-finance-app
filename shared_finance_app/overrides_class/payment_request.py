@@ -67,9 +67,9 @@ class CustomPaymentRequest(PaymentRequest):
 		if flt(self.through_cheque) == 0:
 			self.wire_transfer=self.grand_total
 
-		paid_amount = flt(self.wire_transfer) + flt(self.through_cheque)
-		if paid_amount != self.total_now_being_requested:
-			frappe.throw(_("Total of Wire Transfer and Cheque Amount must be equal to Total Now Being Requested"))
+		#paid_amount = flt(self.wire_transfer) + flt(self.through_cheque)
+		# if paid_amount != self.total_now_being_requested:
+		# 	frappe.throw(_("Total of Wire Transfer and Cheque Amount must be equal to Total Now Being Requested"))
 
 
 
