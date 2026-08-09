@@ -5,7 +5,7 @@ from erpnext.buying.doctype.purchase_order.purchase_order import PurchaseOrder
 class CustomPurchaseOrder(PurchaseOrder):
     def before_save(self):
         # 1. Prepare field_a and field_b
-        field_a = f"{self.grand_total:,.2f} SAR" if self.grand_total else ""
+        field_a = f"{self.base_grand_total:,.2f} SAR" if self.base_grand_total else ""
         field_b = self.supplier_name if self.supplier_name else ""
         
         # 2. Construct the fresh title based on current form values
