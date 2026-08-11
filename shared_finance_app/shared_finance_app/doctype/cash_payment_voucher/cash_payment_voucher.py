@@ -26,7 +26,7 @@ class CashPaymentVoucher(Document):
 		self.calculate_total()
 
 		# 1. Prepare field_a and field_b
-		field_a = f"{self.total:.2f} SR" if self.total else ""
+		field_a = f"{self.total:,.2f} SAR" if self.total else ""
 		remarks_list = [row.description for row in self.get("cash_payment_voucher_account") if row.description]
 		field_b = ", ".join(remarks_list) if remarks_list else ""
         
@@ -37,6 +37,15 @@ class CashPaymentVoucher(Document):
         # Update if custom_title is empty OR if the current values don't match the existing title
 		if not self.custom_title or not self.custom_title.strip() or self.custom_title != new_title:
 			self.custom_title = new_title
+
+		
+		is_list_view_action = frappe.form_dict.get('cmd') == 'frappe.model.workflow.bulk_workflow_approval'
+
+		current_state = self.workflow_state or ''
+
+		if is_list_view_action and (current_state == 'Draft' or 'Rejected' in current_state) and self.has_value_changed('workflow_state'):
+			frappe.throw("<b>Action Blocked:</b> You cannot Reject or Revise directly from the List View. Please click on the document to open it, then take your action so you can provide mandatory remarks.<br>")
+	
  	# self.updat_row_cost_center()
 
 	# def updat_row_cost_center(self):

@@ -28,7 +28,9 @@ app_license = "MIT"
 
 # include js in doctype views
 doctype_js = {"Payment Request": "public/js/payment_request.js",
-              "Purchase Order": "public/js/purchase_order.js"}
+              "Purchase Order": "public/js/purchase_order.js",
+              "Leave Application": "public/js/leave_application.js",
+              "Material Request": "public/js/material_request.js"}
 doctype_list_js = {"Payment Request": "public/js/payment_request_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -90,6 +92,9 @@ doc_events = {
 
 override_doctype_class = {
     'Payment Request': 'shared_finance_app.overrides_class.payment_request.CustomPaymentRequest',
+    'Leave Application': 'shared_finance_app.overrides_class.leave_application.CustomLeaveApplication',
+    'Purchase Order': 'shared_finance_app.overrides_class.purchase_order.CustomPurchaseOrder',
+    'Material Request': 'shared_finance_app.overrides_class.material_request.CustomMaterialRequest'
 }
 
 override_doctype_dashboards = {
