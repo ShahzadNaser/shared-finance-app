@@ -19,9 +19,9 @@ frappe.listview_settings['Payment Request'] = {
                     frappe.throw(__("Row {0}: Cannot process Cancelled documents. Please uncheck them first.", [doc.name]));
                 }
                 
-                // Check if workflow state is exactly "Final Approved"
-                if (doc.workflow_state !== "Final Approved") {
-                    frappe.throw(__("Row {0}: Workflow State must be 'Final Approved'. Current state: {1}", [doc.name, doc.workflow_state]));
+                // Check if workflow state is exactly "Paid"
+                if (doc.workflow_state !== "Paid") {
+                    frappe.throw(__("Row {0}: Workflow State must be 'Paid'. Current state: {1}", [doc.name, doc.workflow_state]));
                 }
             }
         };

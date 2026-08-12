@@ -173,6 +173,31 @@ frappe.ui.form.on('Payment Request', {
                     );
                });
           }
+
+          if (frm.selected_workflow_action === 'Paid') {
+               return new Promise((resolve, reject) => {
+                    
+                    frappe.dom.unfreeze();
+
+                    // Trigger Frappe's standard upload window
+                    let uploader = new frappe.ui.FileUploader({
+                         doctype: frm.doctype,
+                         docname: frm.docname,
+                         folder: 'Home/Attachments',
+                         on_success: (file_doc) => {
+                         // Once the file is successfully uploaded, resolve the promise 
+                         // This allows the workflow state to automatically change to 'Paid'
+                         resolve();
+                         }
+                    });
+
+                    // If the user closes the upload window without uploading a file, reject the promise
+                    // This cancels the workflow transition
+                    uploader.dialog.onhide = () => {
+                         reject();
+                    };
+               });
+          }
      },
      onload: function(frm) {
           total_section_property(frm);   

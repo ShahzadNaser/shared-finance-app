@@ -78,9 +78,9 @@ frappe.listview_settings['Cash Payment Voucher']["onload"] = function (doclist) 
 				}
 
 				// Validate Workflow State
-				const allowed_states = ["Final Approved"];
+				const allowed_states = ["Paid"];
 				if (!doc.workflow_state || !allowed_states.includes(doc.workflow_state)) {
-					frappe.throw(__("Row {0}: Workflow State must be 'Final Approved'. Current state: {1}", [doc.name, doc.workflow_state || "Draft"]));
+					frappe.throw(__("Row {0}: Workflow State must be 'Paid'. Current state: {1}", [doc.name, doc.workflow_state || "Draft"]));
 				}
 			};
 

@@ -40,6 +40,9 @@ class CustomPaymentRequest(PaymentRequest):
 
 		if is_list_view_action and (current_state == 'Draft' or 'Rejected' in current_state) and self.has_value_changed('workflow_state'):
 			frappe.throw("<b>Action Blocked:</b> You cannot Reject or Revise directly from the List View. Please click on the document to open it, then take your action so you can provide mandatory remarks.<br>")
+
+		if is_list_view_action and current_state == 'Paid' and self.has_value_changed('workflow_state'):
+					frappe.throw("<b>Action Blocked:</b> You cannot Paid directly from the List View. Please click on the document to open it, then take your action so you can provide mandatory payment attachment.<br>")	
 	
 	def calculate_totals(self):
 		self.grand_total = 0
@@ -328,8 +331,8 @@ def make_common_journal_entries(docnames = None):
 			frappe.throw(_("Entry already for Payment Withdrawal Approval {0}.").format(name))
 		if doc.docstatus == 2:
 			frappe.throw(_("Payment Withdrawal Approval {0} is cancelled.").format(name))
-		if doc.workflow_state != "Final Approved":
-			frappe.throw(_("Payment Withdrawal Approval {0} workflow status must be 'Final Approved'.").format(name))
+		if doc.workflow_state != "Paid":
+			frappe.throw(_("Payment Withdrawal Approval {0} workflow status must be 'Paid'.").format(name))
 		if doc.pay_to_party:
 			frappe.throw(_("Pay To Party must be unchecked for {0}.").format(name))
 		
@@ -431,8 +434,8 @@ def make_payment_entries(docnames = None):
 		#validate
 		if doc.docstatus == 2:
 			frappe.throw(_("Payment Request {0} is cancelled.").format(name))
-		if doc.workflow_state != "Final Approved":
-			frappe.throw(_("Payment Request {0} workflow status must be 'Final Approved'.").format(name))
+		if doc.workflow_state != "Paid":
+			frappe.throw(_("Payment Request {0} workflow status must be 'Paid'.").format(name))
 		payment_entry = doc.create_payment_entry(submit=False)
 		#payment_entry.insert(ignore_permissions=True)
 		doclist.append(payment_entry)

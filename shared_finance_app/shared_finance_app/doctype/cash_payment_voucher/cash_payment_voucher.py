@@ -45,6 +45,9 @@ class CashPaymentVoucher(Document):
 
 		if is_list_view_action and (current_state == 'Draft' or 'Rejected' in current_state) and self.has_value_changed('workflow_state'):
 			frappe.throw("<b>Action Blocked:</b> You cannot Reject or Revise directly from the List View. Please click on the document to open it, then take your action so you can provide mandatory remarks.<br>")
+
+		if is_list_view_action and current_state == 'Paid' and self.has_value_changed('workflow_state'):
+			frappe.throw("<b>Action Blocked:</b> You cannot Paid directly from the List View. Please click on the document to open it, then take your action so you can provide mandatory payment attachment.<br>")
 	
  	# self.updat_row_cost_center()
 
@@ -609,17 +612,18 @@ def make_journal_voucher(docnames = None, show_msg=True):
 								if d.vat_5:
 									vat_account_table = frappe.get_doc('Item Tax Template',d.vat_5)
 									for tax in vat_account_table.taxes:
-										debit_entry_tax = ({
-											'account': tax.tax_type,
-											"debit_in_account_currency": d.vat_amount,
-											'reference_type': cpv.doctype,
-											'reference_name': cpv.name
-										})
+										if tax.tax_rate > 0:
+											debit_entry_tax = ({
+												'account': tax.tax_type,
+												"debit_in_account_currency": d.vat_amount,
+												'reference_type': cpv.doctype,
+												'reference_name': cpv.name
+											})
 
-									for dimension in accounting_dimensions:
-										debit_entry_tax.update({dimension: d.get(dimension)})
+											for dimension in accounting_dimensions:
+												debit_entry_tax.update({dimension: d.get(dimension)})
 
-									accounts.append(debit_entry_tax)
+											accounts.append(debit_entry_tax)
 
 					accounts.append(cpv.update_accounting_dimensions({
 					'account': frappe.db.get_value('Mode of Payment Account', {'parent': cpv.mode_of_payment,'company': cpv.company}, ['default_account']),
@@ -664,17 +668,18 @@ def make_journal_voucher(docnames = None, show_msg=True):
 								if d.vat_5:
 									vat_account_table = frappe.get_doc('Item Tax Template',d.vat_5)
 									for tax in vat_account_table.taxes:
-										debit_entry_tax = ({
-											'account': tax.tax_type,
-											"debit_in_account_currency": d.vat_amount,
-											'reference_type': cpv.doctype,
-											'reference_name': cpv.name
-										})
+										if tax.tax_rate > 0:
+											debit_entry_tax = ({
+												'account': tax.tax_type,
+												"debit_in_account_currency": d.vat_amount,
+												'reference_type': cpv.doctype,
+												'reference_name': cpv.name
+											})
 								
-									for dimension in accounting_dimensions:
-										debit_entry_tax.update({dimension: d.get(dimension)})
+											for dimension in accounting_dimensions:
+												debit_entry_tax.update({dimension: d.get(dimension)})
 
-									accounts.append(debit_entry_tax)		
+											accounts.append(debit_entry_tax)		
 									
 					accounts.append(cpv.update_accounting_dimensions({
 					'account': frappe.db.get_value('Mode of Payment Account', {'parent': cpv.mode_of_payment,'company': cpv.company}, ['default_account']),
