@@ -63,6 +63,20 @@ frappe.listview_settings['Cash Payment Voucher'] = {
 }
 
 frappe.listview_settings['Cash Payment Voucher']["onload"] = function (doclist) {
+	let style = document.createElement('style');
+	style.innerHTML = `
+		@media (max-width: 500px) {
+			.frappe-list .list-row-container .indicator-pill,
+			.frappe-list .list-row-container .indicator,
+			.list-row-col .indicator-pill {
+				display: none !important;
+				opacity: 0 !important;
+				visibility: hidden !important;
+			}
+		}
+	`;
+	document.head.appendChild(style);
+
 	const make_journal_entry = () => {
 		const selected_docs = doclist.get_checked_items();
 		const docnames = doclist.get_checked_items(true);
