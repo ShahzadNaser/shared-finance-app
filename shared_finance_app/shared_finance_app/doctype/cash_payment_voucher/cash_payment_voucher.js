@@ -171,14 +171,12 @@ frappe.ui.form.on("Cash Payment Voucher", {
                 
                 frappe.dom.unfreeze();
 
-                // Trigger Frappe's standard upload window
                 let uploader = new frappe.ui.FileUploader({
                     doctype: frm.doctype,
                     docname: frm.docname,
                     folder: 'Home/Attachments',
                     on_success: (file_doc) => {
-                        // Once the file is successfully uploaded, resolve the promise 
-                        // This allows the workflow state to automatically change to 'Paid'
+                        // Once the file is successfully uploaded, resolve the promise
                         resolve();
                     }
                 });
@@ -189,6 +187,19 @@ frappe.ui.form.on("Cash Payment Voucher", {
                     reject();
                 };
             });
+        }
+
+		if (frm.selected_workflow_action === 'Submit for Approval') {
+            // Check if the attachments list is empty
+            if (frm.selected_workflow_action === 'Submit for Approval') {
+				if (frm.attachments.get_attachments().length === 0) {
+					frappe.dom.unfreeze();
+					frappe.throw({
+						title: __('Missing Attachment'),
+						message: __('Please attach a required file before submitting for approval.')
+					});
+				}
+			}
         }
     },
 	company: (frm, cdt, cdn) => {

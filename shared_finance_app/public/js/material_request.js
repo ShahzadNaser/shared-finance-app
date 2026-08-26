@@ -113,5 +113,18 @@ frappe.ui.form.on("Material Request", {
 				);
 			});
 		}
+
+		if (frm.selected_workflow_action === 'Submit for Approval') {
+			// Check if the attachments list is empty
+			if (frm.selected_workflow_action === 'Submit for Approval') {
+				if (frm.attachments.get_attachments().length === 0) {
+						frappe.dom.unfreeze();
+						frappe.throw({
+							title: __('Missing Attachment'),
+							message: __('Please attach a required file before submitting for approval.')
+						});
+				}
+			}
+		}
 	}
 })

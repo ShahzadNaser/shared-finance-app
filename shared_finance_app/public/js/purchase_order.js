@@ -135,6 +135,19 @@ frappe.ui.form.on("Purchase Order", {
 				);
 			});
 		}
+
+		if (frm.selected_workflow_action === 'Submit for Approval') {
+			// Check if the attachments list is empty
+			if (frm.selected_workflow_action === 'Submit for Approval') {
+				if (frm.attachments.get_attachments().length === 0) {
+						frappe.dom.unfreeze();
+						frappe.throw({
+							title: __('Missing Attachment'),
+							message: __('Please attach a required file before submitting for approval.')
+						});
+				}
+			}
+		}
 	},
     custom_department: function(frm) {
         frm.trigger("set_department_manager");
