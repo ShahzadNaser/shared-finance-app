@@ -65,7 +65,7 @@ class CustomPaymentRequest(PaymentRequest):
 				self.grand_total += row.allocated_amount or 0
 			self.total_now_being_requested = self.grand_total
 		if flt(self.through_cheque) == 0:
-			self.wire_transfer=self.grand_total
+			self.wire_transfer=self.total_now_being_requested
 
 		#paid_amount = flt(self.wire_transfer) + flt(self.through_cheque)
 		# if paid_amount != self.total_now_being_requested:
