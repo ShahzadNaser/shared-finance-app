@@ -33,7 +33,27 @@ cur_frm.set_query("item", "cash_payment_voucher_account", function(doc, cdt, cdn
 });
 
 
+// Pay To filters for the selected Party Type, read when the user searches
+const PAY_TO_FILTERS = {
+	Employee: (frm) => [
+		["Employee", "status", "=", "Active"],
+		["Employee", "company", "=", frm.doc.company],
+	],
+	Customer: () => [["Customer", "disabled", "=", 0]],
+	Supplier: () => [["Supplier", "disabled", "=", 0]],
+	Department: (frm) => [
+		["Department", "is_group", "=", 0],
+		["Department", "company", "=", frm.doc.company],
+	],
+};
+
 frappe.ui.form.on("Cash Payment Voucher", {
+	setup: (frm) => {
+		frm.set_query("pay_to", () => {
+			const get_filters = PAY_TO_FILTERS[frm.doc.party_type];
+			return get_filters ? { filters: get_filters(frm) } : {};
+		});
+	},
 	onload: (frm) => {
 		if (frm.is_new() && !frm.doc.company) {
 			const default_company = frappe.defaults.get_user_default("Company")
@@ -72,18 +92,6 @@ frappe.ui.form.on("Cash Payment Voucher", {
 			};
 		});
 
-		if(frm.doc.party_type == "Department"){
-			frm.set_query('pay_to', function() {
-				return {
-					filters: [
-							['Department', 'is_group', '=', 0],
-							['Department', 'company', '=', frm.doc.company]
-					]
-				};
-			});
-		}
-
-
 		if(frm.doc.party_type == "Department" && frm.doc.pay_to){
 			frm.set_value("department", frm.doc.pay_to);
 		}
@@ -104,17 +112,6 @@ frappe.ui.form.on("Cash Payment Voucher", {
 	party_type: (frm, cdt, cdn) => {
 		frm.set_value("pay_to","");
 		frm.set_value("party_name","");
-
-		if(frm.doc.party_type == "Department"){
-			frm.set_query('pay_to', function() {
-				return {
-					filters: [
-							['Department', 'is_group', '=', 0],
-							['Department', 'company', '=', frm.doc.company]
-					]
-				};
-			});
-		}
 	},
 
 	party_name: (frm, cdt, cdn) =>{
