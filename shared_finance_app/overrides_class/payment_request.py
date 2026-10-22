@@ -2,6 +2,7 @@ import frappe
 
 import json
 from erpnext.accounts.doctype.payment_request.payment_request import PaymentRequest
+from erpnext.accounts.doctype.mode_of_payment.mode_of_payment import validate_enabled_mode_of_payment
 from erpnext.accounts.doctype.payment_entry.payment_entry import get_company_defaults
 from frappe.utils import flt, nowdate
 from frappe import _, scrub
@@ -16,7 +17,7 @@ from erpnext.accounts.doctype.payment_entry.payment_entry import get_reference_a
 class CustomPaymentRequest(PaymentRequest):
 	def before_save(self, *args, **kwargs):
 		if hasattr(super(), "before_save"):
-			super().befor_save()
+			super().before_save()
 
 		#if self.pay_to_party == 0:
 		self.calculate_totals()
@@ -34,6 +35,57 @@ class CustomPaymentRequest(PaymentRequest):
 		# Update if custom_title is empty OR if the current values don't match the existing title
 		if not self.custom_title or not self.custom_title.strip() or self.custom_title != new_title:
 			self.custom_title = new_title
+
+	def validate(self):
+		# PWA is an internal approval document: pay_to_party = 1 -> Payment Entry against
+		# Payment Request Reference rows, pay_to_party = 0 -> Journal Entry from
+		# Payment Request Item rows. Core validate() assumes a single header reference
+		validate_enabled_mode_of_payment(self.mode_of_payment)
+		if self.get("__islocal"):
+			self.status = "Draft"
+
+		self.calculate_totals()  # validate runs before before_save
+		self.validate_reference_document()
+		self.validate_linked_references()
+		self.validate_payment_request_amount()
+
+	def validate_linked_references(self):
+		"""Company and read-permission checks for the documents a PWA pays against.
+
+		Permission is only checked for references added/changed in this save, so that
+		approvers in the PWA workflow (GA, COO, CFO, CEO, ...) can approve without
+		needing read access to the underlying Purchase Invoices.
+		"""
+		before = self.get_doc_before_save()
+		old_refs = set()
+		if before:
+			if before.reference_doctype and before.reference_name:
+				old_refs.add((before.reference_doctype, before.reference_name))
+			for row in before.get("payment_request_reference") or []:
+				old_refs.add((row.reference_doctype, row.reference_name))
+
+		refs = []
+		if self.reference_doctype and self.reference_name:
+			refs.append((self.reference_doctype, self.reference_name))
+		if self.pay_to_party == 1:
+			for row in self.payment_request_reference:
+				if not row.reference_doctype or not row.reference_name:
+					frappe.throw(
+						_("Row #{0}: Reference Type and Reference Name are required in Payment References").format(row.idx)
+					)
+				refs.append((row.reference_doctype, row.reference_name))
+
+		for doctype, name in refs:
+			company = frappe.db.get_value(doctype, name, "company")
+			if company and company != self.company:
+				frappe.throw(
+					_("Company {0} does not match the company {1} of {2} {3}").format(
+						frappe.bold(self.company), frappe.bold(company), _(doctype), frappe.bold(name)
+					),
+					title=_("Invalid Company"),
+				)
+			if (doctype, name) not in old_refs:
+				frappe.has_permission(doctype, "read", name, throw=True)
 
 	def set_default_mode_of_payment(self):
 		if self.mode_of_payment:
