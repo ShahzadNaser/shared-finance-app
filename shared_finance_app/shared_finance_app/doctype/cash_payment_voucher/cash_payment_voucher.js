@@ -306,7 +306,8 @@ frappe.ui.form.on("Cash Payment Voucher", {
 		}     
    	},
 	clear_employee: function(frm){
-		if(frm.is_new() && !employee_added){
+		// a voucher made from a Business Trip brings its employee on purpose
+		if(frm.is_new() && !employee_added && !frm.doc.custom_leave_application){
 			frm.doc.employee = "";
 			frm.doc.cash_payment_voucher_account.forEach(function(item){
 				item.employee = "";

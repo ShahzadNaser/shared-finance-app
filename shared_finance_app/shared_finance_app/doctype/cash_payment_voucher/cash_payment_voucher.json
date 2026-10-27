@@ -34,6 +34,8 @@
   "currency",
   "company_currency",
   "reference_number",
+  "source_section",
+  "custom_leave_application",
   "section_break_26",
   "next_workflow_state",
   "auto_create_jv",
@@ -235,11 +237,27 @@
    "fieldtype": "Link",
    "label": "Sector",
    "options": "Sector"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "source_section",
+   "fieldtype": "Section Break",
+   "label": "Source"
+  },
+  {
+   "description": "The Business Trip (Leave Application) this voucher was created from.",
+   "fieldname": "custom_leave_application",
+   "fieldtype": "Link",
+   "label": "Leave Application",
+   "no_copy": 1,
+   "options": "Leave Application",
+   "read_only": 1,
+   "search_index": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-07-27 13:23:50.376138",
+ "modified": "2026-10-26 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Shared Finance App",
  "name": "Cash Payment Voucher",

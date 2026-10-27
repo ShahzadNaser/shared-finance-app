@@ -7,6 +7,44 @@ frappe.ui.form.on("Leave Application", {
         } else {
             frm.set_intro('');
         }
+
+        frm.trigger("business_trip_cpv_button");
+    },
+
+    // Cash Payment Voucher for an approved Business Trip
+    business_trip_cpv_button: async function(frm) {
+        if (frm.doc.leave_type !== "Business Trip" || frm.doc.docstatus !== 1 || frm.doc.status !== "Approved") {
+            return;
+        }
+
+        const leave_application = frm.doc.name;
+        const { message } = await frappe.call({
+            method: "shared_finance_app.shared_finance_app.business_trip.get_cpv_status",
+            args: { leave_application },
+        });
+        // the user may have moved on to another leave meanwhile
+        if (!message || frm.doc.name !== leave_application) return;
+
+        if (message.cpv) {
+            frm.add_custom_button(__("View CPV"), () => {
+                frappe.set_route("Form", "Cash Payment Voucher", message.cpv);
+            });
+        } else if (message.can_create && frappe.model.can_create("Cash Payment Voucher")) {
+            frm.add_custom_button(__("Create CPV"), () => {
+                frappe.call({
+                    method: "shared_finance_app.shared_finance_app.business_trip.make_cpv_from_leave_application",
+                    args: { leave_application: frm.doc.name },
+                    freeze: true,
+                    freeze_message: __("Preparing Cash Payment Voucher..."),
+                    callback: (r) => {
+                        if (!r.message) return;
+                        // opened unsaved: Finance reviews the amounts and saves it
+                        frappe.model.sync(r.message);
+                        frappe.set_route("Form", "Cash Payment Voucher", r.message.name);
+                    },
+                });
+            });
+        }
     },
     before_workflow_action: function(frm) {
         if (['Reject', 'Revise'].includes(frm.selected_workflow_action)) {

@@ -90,6 +90,10 @@ doc_events = {
         #"on_submit": "shared_finance_app.overrides_class.payment_request.on_submit_via_hooks",
         "on_cancel": "shared_finance_app.overrides_class.payment_request.on_cancel",
     },
+    #a Business Trip cannot be cancelled while its Cash Payment Voucher is in progress
+    "Leave Application": {
+        "before_cancel": "shared_finance_app.shared_finance_app.business_trip.validate_leave_cancel",
+    },
 }
 
 override_doctype_class = {
