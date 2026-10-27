@@ -15,6 +15,24 @@ from frappe import _
 import json
 class CashPaymentVoucher(Document):
 
+	def validate(self):
+		self.validate_leave_application()
+
+	def validate_leave_application(self):
+		"""one voucher (not cancelled) per Business Trip."""
+		from shared_finance_app.shared_finance_app.business_trip import get_linked_cpv
+
+		if self.get("custom_leave_application") and self.docstatus != 2:
+			existing = get_linked_cpv(self.custom_leave_application, exclude=self.name)
+			if existing:
+				frappe.throw(
+					_("Cash Payment Voucher {0} already exists for Business Trip {1}.").format(
+						frappe.utils.get_link_to_form("Cash Payment Voucher", existing),
+						frappe.bold(self.custom_leave_application),
+					),
+					title=_("Duplicate Cash Payment Voucher"),
+				)
+
 	def before_save(self):
 		# update_next_state(self)
 		# total = 0
@@ -66,19 +84,22 @@ class CashPaymentVoucher(Document):
 		for row in self.cash_payment_voucher_account:
 			if row.charge_to=='Employee' and row.employee:
 
-				total_salary_slip=frappe.db.sql(""" select ifnull(sum(net_pay),0) from `tabSalary Slip` 
-				                                       where docstatus=1 and employee='{0}' """.format(row.employee))
+				total_salary_slip=frappe.db.sql(""" select ifnull(sum(net_pay),0) from `tabSalary Slip`
+				                                       where docstatus=1 and employee=%s """, row.employee)
 				if len(total_salary_slip)>0:
 					total_salary_slip=total_salary_slip[0][0]
 				else:
 					total_salary_slip=0.0
 
-				total_employee_clearnce=frappe.db.sql(""" select ifnull(sum(deserve_amount),0) from `tabEmployee Clearance`
-				                                          where docstatus=1 and employee='{0}' """.format(row.employee))
-				if len(total_employee_clearnce)>0:
-					total_employee_clearnce=total_employee_clearnce[0][0]
-				else:
-					total_employee_clearnce=0.0
+				# Employee Clearance does not exist on every site (e.g. OMNI)
+				total_employee_clearnce=0.0
+				if frappe.db.table_exists("Employee Clearance"):
+					total_employee_clearnce=frappe.db.sql(""" select ifnull(sum(deserve_amount),0) from `tabEmployee Clearance`
+					                                          where docstatus=1 and employee=%s """, row.employee)
+					if len(total_employee_clearnce)>0:
+						total_employee_clearnce=total_employee_clearnce[0][0]
+					else:
+						total_employee_clearnce=0.0
 
 				row.paid_amount=total_salary_slip+total_employee_clearnce
 				print("Total salary slip {0}".format(total_salary_slip))
@@ -86,8 +107,8 @@ class CashPaymentVoucher(Document):
 
 				total_cpv=frappe.db.sql(""" select ifnull(sum(c.net_amount),0) from `tabCash Payment Voucher` cpv,
 				`tabCash Payment Voucher Account` c
-				  where cpv.docstatus=1 and c.parent=cpv.name and  c.employee='{0}'
-				   """.format(row.employee))
+				  where cpv.docstatus=1 and c.parent=cpv.name and  c.employee=%s
+				   """, row.employee)
 
 				if len(total_cpv)>0:
 					total_cpv=total_cpv[0][0]
