@@ -27,10 +27,11 @@ app_license = "MIT"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {"Payment Request": "public/js/payment_request.js",
-              "Purchase Order": "public/js/purchase_order.js",
+doctype_js = {"Payment Request": ["public/js/payment_request.js", "public/js/top_management_request.js"],
+              "Purchase Order": ["public/js/purchase_order.js", "public/js/top_management_request.js"],
               "Leave Application": "public/js/leave_application.js",
-              "Material Request": "public/js/material_request.js"}
+              "Material Request": ["public/js/material_request.js", "public/js/top_management_request.js"],
+              "Cash Payment Voucher": "public/js/top_management_request.js"}
 doctype_list_js = {"Payment Request": "public/js/payment_request_list.js",
                    "Purchase Order": "public/js/purchase_order_list.js",
                    "Material Request": "public/js/material_request_list.js"}
@@ -73,13 +74,28 @@ doctype_list_js = {"Payment Request": "public/js/payment_request_list.js",
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+#Top Management Requests are visible only to the Top Management roles
+permission_query_conditions = {
+    "Cash Payment Voucher": "shared_finance_app.top_management.permissions.tm_query_conditions",
+    "Payment Request": "shared_finance_app.top_management.permissions.tm_query_conditions",
+    "Material Request": "shared_finance_app.top_management.permissions.tm_query_conditions",
+    "Purchase Order": "shared_finance_app.top_management.permissions.tm_query_conditions",
+}
+
+has_permission = {
+    "Cash Payment Voucher": "shared_finance_app.top_management.permissions.tm_has_permission",
+    "Payment Request": "shared_finance_app.top_management.permissions.tm_has_permission",
+    "Material Request": "shared_finance_app.top_management.permissions.tm_has_permission",
+    "Purchase Order": "shared_finance_app.top_management.permissions.tm_has_permission",
+}
+
+#the Top Management Request flag on the four doctypes above
+fixtures = [
+    {
+        "dt": "Custom Field",
+        "filters": [["fieldname", "=", "custom_top_management_request"]],
+    },
+]
 
 # Document Events
 # ---------------
