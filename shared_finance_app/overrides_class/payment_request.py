@@ -2,6 +2,7 @@ import frappe
 
 import json
 from erpnext.accounts.doctype.payment_request.payment_request import PaymentRequest
+from erpnext.accounts.doctype.mode_of_payment.mode_of_payment import validate_enabled_mode_of_payment
 from erpnext.accounts.doctype.payment_entry.payment_entry import get_company_defaults
 from frappe.utils import flt, nowdate
 from frappe import _, scrub
@@ -16,7 +17,7 @@ from erpnext.accounts.doctype.payment_entry.payment_entry import get_reference_a
 class CustomPaymentRequest(PaymentRequest):
 	def before_save(self, *args, **kwargs):
 		if hasattr(super(), "before_save"):
-			super().befor_save()
+			super().before_save()
 
 		#if self.pay_to_party == 0:
 		self.calculate_totals()
@@ -64,21 +65,39 @@ class CustomPaymentRequest(PaymentRequest):
 
 
 
-	def validate_payment_request_amount(self):
+	def has_reference(self):
+		return bool(self.reference_doctype and self.reference_name)
+
+	def validate(self):
+		if self.has_reference():
+			return super().validate()
+
+		# ISS-2026-00155: PWA (Payment Withdrawal Approval) has no reference document.
+		# Mirrors PaymentRequest.validate (ERPNext 16.52.1) without the checks that need it:
+		# get_doc + check_permission, validate_reference_company, validate_print_format
+		validate_enabled_mode_of_payment(self.mode_of_payment)
+		if self.get("__islocal"):
+			self.status = "Draft"
+		self.validate_reference_document()
+		self.validate_against_payment_reference()
+		self.validate_payment_request_amount()
+		# self.validate_currency()
+		self.validate_subscription_details()
+
+	def validate_payment_request_amount(self, ref_doc=None):
 		"""Override to only validate when pay_to_party = 1"""
 		# Only validate against reference document when paying to a party
-		if self.pay_to_party == 1 and self.reference_doctype and self.reference_name:
+		if self.pay_to_party == 1 and self.has_reference():
 			from erpnext.accounts.doctype.payment_request.payment_request import (
 				get_amount,
 				get_existing_payment_request_amount,
 			)
 
-			existing_payment_request_amount = get_existing_payment_request_amount(
-				self.reference_doctype, self.reference_name
-			)
+			# ERPNext passes ref_doc since 16.52, and the helper takes it since 16.20
+			ref_doc = ref_doc or frappe.get_doc(self.reference_doctype, self.reference_name)
+			existing_payment_request_amount = get_existing_payment_request_amount(ref_doc)
 
 			if existing_payment_request_amount:
-				ref_doc = frappe.get_doc(self.reference_doctype, self.reference_name)
 				if not hasattr(ref_doc, "order_type") or getattr(ref_doc, "order_type") != "Shopping Cart":
 					ref_amount = get_amount(ref_doc, self.payment_account)
 
@@ -124,6 +143,17 @@ class CustomPaymentRequest(PaymentRequest):
 		if self.pay_to_party == 1 and frappe.db.get_value(self.reference_doctype, self.reference_name,"docstatus") != 1:
 			frappe.throw("<b>{0}</b> must be submitted.".format(self.reference_name))
 	
+	def before_submit(self):
+		if self.has_reference():
+			return super().before_submit()
+
+		# no reference document to take the outstanding amount, gateway or email from
+		self.outstanding_amount = self.grand_total
+		if self.payment_request_type == "Outward":
+			self.status = "Initiated"
+		elif self.payment_request_type == "Inward":
+			self.status = "Requested"
+
 	def on_submit(self):
 		if self.payment_request_type == 'Outward':
 			self.db_set('status', 'Initiated')
@@ -132,7 +162,7 @@ class CustomPaymentRequest(PaymentRequest):
 			self.db_set('status', 'Requested')
 
 		send_mail = self.payment_gateway_validation() if self.payment_gateway else None
-		if self.pay_to_party == 1:
+		if self.pay_to_party == 1 and self.has_reference():
 			ref_doc = frappe.get_doc(self.reference_doctype, self.reference_name)
 			if (hasattr(ref_doc, "order_type") and getattr(ref_doc, "order_type") == "Shopping Cart") \
 				or self.flags.mute_email:
