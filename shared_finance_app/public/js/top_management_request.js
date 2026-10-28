@@ -1,7 +1,7 @@
 // a new Cash Payment Voucher, Payment Request, Material Request or Purchase Order is
 // ticked as a Top Management Request for the Top Management Requester. Ticked once per new document,
 // so it stays unticked if she unticks it. Nothing happens where the field isn't on the form.
-(() => {
+;(() => {
 	if (window.__tm_request_registered) return;
 	window.__tm_request_registered = true;
 
