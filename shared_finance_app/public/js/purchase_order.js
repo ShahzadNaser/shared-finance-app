@@ -9,7 +9,7 @@ frappe.ui.form.on("Purchase Order", {
 			help_box[0].style.setProperty('font-weight', 'bold', 'important');
 		}
         
-        if(frm.doc.custom_department){
+        if(frm.doc.custom_department && shared_finance_app.can_update_dept_manager(frm)){
             frm.trigger("set_department_manager");
         }
 
@@ -23,7 +23,9 @@ frappe.ui.form.on("Purchase Order", {
 		});
     },
     custom_department: function(frm) {
-        frm.trigger("set_department_manager");
+        if (shared_finance_app.can_update_dept_manager(frm)) {
+            frm.trigger("set_department_manager");
+        }
     },
     set_department_manager: function(frm) {
 		if (frm.doc.custom_department) {

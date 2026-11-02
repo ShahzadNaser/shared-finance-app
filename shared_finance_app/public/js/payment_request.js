@@ -90,7 +90,7 @@ frappe.ui.form.on('Payment Request', {
                };
           });
 
-          if(frm.doc.department){
+          if(frm.doc.custom_department && shared_finance_app.can_update_dept_manager(frm)){
                frm.trigger("set_department_manager");
           }
 
@@ -199,7 +199,9 @@ frappe.ui.form.on('Payment Request', {
           }
      },
      custom_department: function(frm) {
-          frm.trigger("set_department_manager");
+          if (shared_finance_app.can_update_dept_manager(frm)) {
+               frm.trigger("set_department_manager");
+          }
      },
      set_department_manager: function(frm) {
 		if (frm.doc.custom_department) {
