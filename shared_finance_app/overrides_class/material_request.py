@@ -1,6 +1,7 @@
 import frappe
 from frappe import _, msgprint
 from erpnext.stock.doctype.material_request.material_request import MaterialRequest
+from shared_finance_app.utils.workflow import handle_reject_revise
 
 class CustomMaterialRequest(MaterialRequest):
     def before_save(self):
@@ -27,3 +28,6 @@ class CustomMaterialRequest(MaterialRequest):
         # Update if custom_title is empty OR if the current values don't match the existing title
         if not self.custom_titlee or not self.custom_titlee.strip() or self.custom_titlee != new_title:
             self.custom_titlee = new_title
+
+        # Reject/Revise: block from list view and write the action remarks
+        handle_reject_revise(self)

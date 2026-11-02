@@ -13,6 +13,7 @@ from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import g
 from frappe.utils import flt, getdate, add_days
 from frappe import _ 
 import json
+from shared_finance_app.utils.workflow import handle_reject_revise
 class CashPaymentVoucher(Document):
 
 	def before_save(self):
@@ -37,6 +38,9 @@ class CashPaymentVoucher(Document):
         # Update if custom_title is empty OR if the current values don't match the existing title
 		if not self.custom_title or not self.custom_title.strip() or self.custom_title != new_title:
 			self.custom_title = new_title
+
+		# Reject/Revise: block from list view and write the action remarks
+		handle_reject_revise(self)
 
  	# self.updat_row_cost_center()
 

@@ -18,7 +18,7 @@ app_license = "MIT"
 # include js, css files in header of desk.html
 # app_include_css = "/assets/shared_finance_app/css/shared_finance_app.css"
 # app_include_js = "/assets/shared_finance_app/js/shared_finance_app.js"
-app_include_js = "department_manager.bundle.js"
+app_include_js = ["department_manager.bundle.js", "workflow_remarks.bundle.js"]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/shared_finance_app/css/shared_finance_app.css"
@@ -30,7 +30,8 @@ app_include_js = "department_manager.bundle.js"
 # include js in doctype views
 doctype_js = {"Payment Request": "public/js/payment_request.js",
               "Purchase Order": "public/js/purchase_order.js",
-              "Material Request": "public/js/material_request.js"}
+              "Material Request": "public/js/material_request.js",
+              "Leave Application": "public/js/leave_application.js"}
 doctype_list_js = {"Payment Request": "public/js/payment_request_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -89,6 +90,16 @@ doc_events = {
     "Payment Request": {
         #"on_submit": "shared_finance_app.overrides_class.payment_request.on_submit_via_hooks",
         "on_cancel": "shared_finance_app.overrides_class.payment_request.on_cancel",
+        "validate": "shared_finance_app.utils.workflow.validate_submit_for_approval_attachment",
+    },
+    "Cash Payment Voucher": {
+        "validate": "shared_finance_app.utils.workflow.validate_submit_for_approval_attachment",
+    },
+    "Material Request": {
+        "validate": "shared_finance_app.utils.workflow.validate_submit_for_approval_attachment",
+    },
+    "Purchase Order": {
+        "validate": "shared_finance_app.utils.workflow.validate_submit_for_approval_attachment",
     },
 }
 
@@ -96,6 +107,7 @@ override_doctype_class = {
     'Payment Request': 'shared_finance_app.overrides_class.payment_request.CustomPaymentRequest',
     'Material Request': 'shared_finance_app.overrides_class.material_request.CustomMaterialRequest',
     'Purchase Order': 'shared_finance_app.overrides_class.purchase_order.CustomPurchaseOrder',
+    'Leave Application': 'shared_finance_app.overrides_class.leave_application.CustomLeaveApplication',
 }
 
 override_doctype_dashboards = {
@@ -105,6 +117,10 @@ override_doctype_dashboards = {
 
 
 after_migrate = "shared_finance_app.utils.migrate.after_migrate"
+
+fixtures = [
+    {"dt": "Custom Field", "filters": [["fieldname", "=", "custom_action_remarks"]]},
+]
 
 
 # Scheduled Tasks
