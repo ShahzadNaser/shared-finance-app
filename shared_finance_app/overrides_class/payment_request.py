@@ -406,9 +406,39 @@ def make_common_journal_entries(docnames = None):
 	if len(doclist) > 0:
 		make_common_journal_voucher(doclist)
 
+def get_common_journal_company(docs):
+	"""The Journal Entry is booked in the company of the selected PWAs, not the user's default company."""
+	companies = {doc.company for doc in docs if doc.company}
+	if len(companies) > 1:
+		frappe.throw(
+			_("The selected Payment Withdrawal Approvals belong to different companies ({0}). Create the Journal Entry for one company at a time.").format(
+				", ".join(sorted(companies))
+			)
+		)
+	return companies.pop() if companies else frappe.defaults.get_defaults().company
+
+
+def get_mode_of_payment_account(doc, company, errors):
+	if not doc.mode_of_payment:
+		errors.append(_("Set the Mode of Payment on Payment Withdrawal Approval {0}.").format(doc.name))
+		return None
+
+	account = frappe.db.get_value(
+		"Mode of Payment Account", {"parent": doc.mode_of_payment, "company": company}, "default_account"
+	)
+	if not account:
+		errors.append(
+			_("Mode of Payment {0} has no default account for company {1} (Payment Withdrawal Approval {2}). Set it in Mode of Payment > Accounts.").format(
+				doc.mode_of_payment, company, doc.name
+			)
+		)
+	return account
+
+
 @frappe.whitelist()
 def make_common_journal_voucher(pr_name, doc=None, show_msg=True):
-	company = frappe.defaults.get_defaults().company
+	docs = [frappe.get_doc("Payment Request", pr) for pr in pr_name if pr]
+	company = get_common_journal_company(docs)
 
 	je = frappe.new_doc('Journal Entry')
 	je.voucher_type = 'Journal Entry'
@@ -425,40 +455,55 @@ def make_common_journal_voucher(pr_name, doc=None, show_msg=True):
 		je.user_remark = combined_remarks
 	je.cheque_date = nowdate()
 
-	for pr in pr_name:
-		if pr:
-			doc = frappe.get_doc('Payment Request',pr)
-			for acc in doc.payment_request_item:
-				if acc.account:
-					total_debit = acc.now_being_request
-					total_credit = 0.0
-					if acc.now_being_request < 0:
-						total_credit = abs(acc.now_being_request)
-						total_debit = 0.0
+	# Every PWA is checked before anything is created; all problems are reported together
+	errors = []
+	for doc in docs:
+		bank_account = get_mode_of_payment_account(doc, company, errors)
+		for acc in doc.payment_request_item:
+			if not acc.account:
+				if flt(acc.now_being_request):
+					errors.append(
+						_("Set the Account on item row {0} of Payment Withdrawal Approval {1}.").format(acc.idx, doc.name)
+					)
+				continue
 
-					temp_dict = {
-						'account': acc.account,
-						'branch': acc.branch,
-						'division': acc.custom_division,
-						'cost_center': acc.cost_center,
-						'reference_name': doc.name,
-						'reference_type': 'Payment Request',
-						'debit_in_account_currency': total_debit,
-						'credit_in_account_currency': total_credit,
-						'party_type':acc.party_type,
-						'party':acc.party,
-						'user_remark': acc.remarks
-					}
+			if acc.account == bank_account:
+				errors.append(
+					_("Item row {0} of Payment Withdrawal Approval {1} uses {2}, which is also the bank account of Mode of Payment {3}: the Journal Entry would debit and credit the same account. Set the correct account on the item row (for an inter-company transfer, the inter-company account).").format(
+						acc.idx, doc.name, acc.account, doc.mode_of_payment
+					)
+				)
+				continue
 
-					# for dimension in dimensions:
-					# 	if acc.get(dimension):
-					# 		temp_dict[dimension] = acc.get(dimension)
+			total_debit = acc.now_being_request
+			total_credit = 0.0
+			if acc.now_being_request < 0:
+				total_credit = abs(acc.now_being_request)
+				total_debit = 0.0
 
-					je.append("accounts", temp_dict)
+			temp_dict = {
+				'account': acc.account,
+				'branch': acc.branch,
+				'division': acc.custom_division,
+				'cost_center': acc.cost_center,
+				'reference_name': doc.name,
+				'reference_type': 'Payment Request',
+				'debit_in_account_currency': total_debit,
+				'credit_in_account_currency': total_credit,
+				'party_type':acc.party_type,
+				'party':acc.party,
+				'user_remark': acc.remarks
+			}
 
+			# for dimension in dimensions:
+			# 	if acc.get(dimension):
+			# 		temp_dict[dimension] = acc.get(dimension)
+
+			je.append("accounts", temp_dict)
+
+		if bank_account:
 			je.append("accounts", {
-				'account': frappe.db.get_value("Mode of Payment Account",
-						{"parent": doc.mode_of_payment, "company": company}, "default_account"),
+				'account': bank_account,
 				'cost_center': doc.cost_center,
 				'branch': doc.branch,
 				'division': doc.division,
@@ -468,23 +513,34 @@ def make_common_journal_voucher(pr_name, doc=None, show_msg=True):
 				'debit_in_account_currency': 0.0,
 				'user_remark': doc.reimbursement_type
 			})
-			
+
+	# Never let a row without an account reach ERPNext (it fails there with a TypeError)
+	for row in je.accounts:
+		if not row.account:
+			errors.append(
+				_("Journal Entry row {0} ({1}) for Payment Withdrawal Approval {2} has no account.").format(
+					row.idx, _("credit") if flt(row.credit_in_account_currency) else _("debit"), row.reference_name
+				)
+			)
+
+	if errors:
+		frappe.throw(
+			"<ul>{0}</ul>".format("".join(f"<li>{e}</li>" for e in errors)),
+			title=_("Cannot create the Journal Entry"),
+		)
 
 	je.flags.ignore_permissions = True
 	je.insert()
 	je.save()
 
-	if show_msg:
-		frappe.db.commit()
-
+	# No commit here: the request commits once at the end, so an error while submitting
+	# any PWA rolls back the Journal Entry and the other PWAs too (no partial entries)
 	if je:
-		for pr in pr_name:
-			if pr:
-				doc = frappe.get_doc('Payment Request', pr)
-				if doc.docstatus == 0:
-					doc.submit()
+		for doc in docs:
+			doc.reload()
+			if doc.docstatus == 0:
+				doc.submit()
 		if show_msg:
-			frappe.db.commit()
 			frappe.msgprint("Journal Entry record successfully created!")
 		else:
 			return doc
