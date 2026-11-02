@@ -96,7 +96,7 @@ frappe.ui.form.on("Cash Payment Voucher", {
 			frm.set_value("department", frm.doc.pay_to);
 		}
 
-		if(frm.doc.department){
+		if(frm.doc.department && shared_finance_app.can_update_dept_manager(frm)){
 			frm.trigger("set_department_manager");
 		}
 
@@ -176,7 +176,9 @@ frappe.ui.form.on("Cash Payment Voucher", {
 		}
 	},
 	department: function(frm) {
-          frm.trigger("set_department_manager");
+          if (shared_finance_app.can_update_dept_manager(frm)) {
+               frm.trigger("set_department_manager");
+          }
     },
     set_department_manager: function(frm) {
 		if (frm.doc.department) {
