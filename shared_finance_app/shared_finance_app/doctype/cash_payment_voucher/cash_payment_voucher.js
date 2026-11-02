@@ -100,7 +100,10 @@ frappe.ui.form.on("Cash Payment Voucher", {
 			frm.trigger("set_department_manager");
 		}
 
-
+		shared_finance_app.show_action_remarks(frm);
+	},
+	before_workflow_action: (frm) => {
+		return shared_finance_app.before_workflow_action(frm, { require_attachment: true });
 	},
 	pay_to: (frm, cdt, cdn) => {
 		set_party_name(frm);

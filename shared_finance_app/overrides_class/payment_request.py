@@ -12,6 +12,7 @@ from erpnext.accounts.doctype.journal_entry.journal_entry import get_default_ban
 from erpnext.accounts.doctype.bank_account.bank_account import get_party_bank_account
 from erpnext.accounts.doctype.invoice_discounting.invoice_discounting import get_party_account_based_on_invoice_discounting
 from erpnext.accounts.doctype.payment_entry.payment_entry import get_reference_as_per_payment_terms
+from shared_finance_app.utils.workflow import handle_reject_revise
 
 
 class CustomPaymentRequest(PaymentRequest):
@@ -35,6 +36,9 @@ class CustomPaymentRequest(PaymentRequest):
 		# Update if custom_title is empty OR if the current values don't match the existing title
 		if not self.custom_title or not self.custom_title.strip() or self.custom_title != new_title:
 			self.custom_title = new_title
+
+		# Reject/Revise: block from list view and write the action remarks
+		handle_reject_revise(self)
 
 	def validate(self):
 		# PWA is an internal approval document: pay_to_party = 1 -> Payment Entry against

@@ -21,6 +21,11 @@ frappe.ui.form.on("Purchase Order", {
 				]
 			};
 		});
+
+        shared_finance_app.show_action_remarks(frm);
+    },
+    before_workflow_action: function(frm) {
+        return shared_finance_app.before_workflow_action(frm, { require_attachment: true });
     },
     custom_department: function(frm) {
         if (shared_finance_app.can_update_dept_manager(frm)) {

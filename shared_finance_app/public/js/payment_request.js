@@ -94,7 +94,10 @@ frappe.ui.form.on('Payment Request', {
                frm.trigger("set_department_manager");
           }
 
-
+          shared_finance_app.show_action_remarks(frm);
+     },
+     before_workflow_action: function(frm) {
+          return shared_finance_app.before_workflow_action(frm, { require_attachment: true });
      },
      onload: function(frm) {
           total_section_property(frm);   
