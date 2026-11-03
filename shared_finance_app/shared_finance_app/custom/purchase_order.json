@@ -38,7 +38,7 @@
    "label": "Department",
    "length": 0,
    "link_filters": null,
-   "mandatory_depends_on": "eval:doc.company == \"Orient Agents For Trading CO. (OMATRA)\"",
+   "mandatory_depends_on": "eval:doc.company != \"Strategic Contracting CO. LLC (EuroFix)\"",
    "modified": "2026-07-13 09:40:50.334031",
    "modified_by": "Administrator",
    "module": null,
