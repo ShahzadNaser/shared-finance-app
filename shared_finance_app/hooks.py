@@ -96,7 +96,7 @@ doc_events = {
         "validate": "shared_finance_app.utils.workflow.validate_submit_for_approval_attachment",
     },
     "Material Request": {
-        "validate": "shared_finance_app.utils.workflow.validate_submit_for_approval_attachment",
+        "validate": "shared_finance_app.utils.workflow.validate_material_request_attachment",
     },
     "Purchase Order": {
         "validate": "shared_finance_app.utils.workflow.validate_submit_for_approval_attachment",

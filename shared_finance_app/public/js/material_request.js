@@ -24,7 +24,10 @@ frappe.ui.form.on('Material Request', {
         shared_finance_app.show_action_remarks(frm);
     },
     before_workflow_action: function(frm) {
-        return shared_finance_app.before_workflow_action(frm, { require_attachment: true });
+        // Attachment is only mandatory for Purchase requests; Reject/Revise remarks apply to all types
+        return shared_finance_app.before_workflow_action(frm, {
+            require_attachment: frm.doc.material_request_type === "Purchase",
+        });
     },
     custom_department: function(frm) {
         if (shared_finance_app.can_update_dept_manager(frm)) {
