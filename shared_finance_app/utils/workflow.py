@@ -107,3 +107,11 @@ def validate_submit_for_approval_attachment(doc, method=None):
 		frappe.throw(
 			_("Please attach a required file before submitting for approval."), title=_("Missing Attachment")
 		)
+
+
+def validate_material_request_attachment(doc, method=None):
+	"""doc_events validate for Material Request: the attachment is only required for Purchase requests."""
+	if doc.get("material_request_type") != "Purchase":
+		return
+
+	validate_submit_for_approval_attachment(doc, method)
