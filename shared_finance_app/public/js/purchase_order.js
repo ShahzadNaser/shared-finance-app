@@ -169,4 +169,4 @@ frappe.ui.form.on("Purchase Order", {
 			});
 		}
 	}
-})
+});
