@@ -2,10 +2,17 @@ import frappe
 
 import json
 from erpnext.accounts.doctype.payment_request.payment_request import PaymentRequest
-from erpnext.accounts.doctype.mode_of_payment.mode_of_payment import validate_enabled_mode_of_payment
 from erpnext.accounts.doctype.payment_entry.payment_entry import get_company_defaults
 from frappe.utils import flt, nowdate
 from frappe import _, scrub
+
+try:
+	from erpnext.accounts.doctype.mode_of_payment.mode_of_payment import validate_enabled_mode_of_payment
+except ImportError:
+	# ERPNext before 16.52 (e.g. ToLeave on 16.34) has no such helper: same check as in 16.52
+	def validate_enabled_mode_of_payment(mode_of_payment):
+		if mode_of_payment and not frappe.get_cached_value("Mode of Payment", mode_of_payment, "enabled"):
+			frappe.throw(_("Mode of Payment {0} is disabled.").format(frappe.bold(mode_of_payment)))
 from erpnext.accounts.utils import get_account_currency
 from erpnext.accounts.party import get_party_account
 from erpnext.accounts.doctype.journal_entry.journal_entry import get_default_bank_cash_account

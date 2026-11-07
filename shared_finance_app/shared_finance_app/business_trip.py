@@ -58,9 +58,13 @@ def make_cpv_from_leave_application(leave_application):
 		["name", "employee_name", "department", "branch", *employee_optional_fields()],
 		as_dict=True,
 	)
-	company_cost_center, currency = frappe.get_cached_value(
-		"Company", leave.company, ["cost_center", "default_currency"]
-	)
+	if not employee:
+		frappe.throw(_("Employee {0} of this Business Trip was not found.").format(frappe.bold(leave.employee)))
+
+	company_values = frappe.get_cached_value("Company", leave.company, ["cost_center", "default_currency"])
+	if not company_values:
+		frappe.throw(_("Company {0} of this Business Trip was not found.").format(frappe.bold(leave.company)))
+	company_cost_center, currency = company_values
 
 	department = leave.department or employee.department
 	cost_center = get_cost_center(employee, department, leave.company) or company_cost_center
