@@ -10,11 +10,12 @@ rolled back, so nothing stays on the site.
 from unittest.mock import patch
 
 import frappe
+from frappe.model.workflow import get_workflow_name
 from frappe.tests import IntegrationTestCase
 
 from shared_finance_app.shared_finance_app import business_trip as bt
 
-COMPANY = "Omni East Company"
+OMNI_COMPANY = "Omni East Company"
 LOCAL, OVERSEAS = "Local With KSA", "Overseas"
 
 # Full Diem rows as they are in the omnieast Travel Policy
@@ -37,12 +38,20 @@ POLICIES = {
 FROM_DATE, TO_DATE = "2026-09-17", "2026-09-19"
 
 
+def get_test_company():
+	"""OMNI's company where it exists, else this site's default one (ToLeave has its own)."""
+	if frappe.db.exists("Company", OMNI_COMPANY):
+		return OMNI_COMPANY
+	return frappe.defaults.get_global_default("company") or frappe.db.get_value("Company", {}, "name")
+
+
 class TestBusinessTripCPV(IntegrationTestCase):
 	@classmethod
 	def setUpClass(cls):
 		super().setUpClass()
 		frappe.set_user("Administrator")
-		cls.department = frappe.db.get_value("Department", {"company": COMPANY, "is_group": 0}, "name")
+		cls.company = get_test_company()
+		cls.department = frappe.db.get_value("Department", {"company": cls.company, "is_group": 0}, "name")
 		cls.branch = frappe.db.get_value("Branch", {}, "name")
 		cls.employee = "_T-BT-EMP-1"
 		frappe.get_doc(
@@ -51,7 +60,7 @@ class TestBusinessTripCPV(IntegrationTestCase):
 				"name": cls.employee,
 				"first_name": "Test",
 				"employee_name": "Test Business Traveller",
-				"company": COMPANY,
+				"company": cls.company,
 				"status": "Active",
 				"gender": "Male",
 				"date_of_birth": "1990-01-01",
@@ -119,14 +128,14 @@ class TestBusinessTripCPV(IntegrationTestCase):
 		rate = bt.get_per_diem_rate("Grade 9", LOCAL)
 
 		self.assertTrue(cpv.is_new())
-		self.assertEqual(cpv.company, COMPANY)
+		self.assertEqual(cpv.company, self.company)
 		self.assertEqual(cpv.party_type, "Employee")
 		self.assertEqual(cpv.pay_to, self.employee)
 		self.assertEqual(cpv.party_name, "Test Business Traveller")
 		self.assertEqual(cpv.department, self.department)
 		self.assertEqual(cpv.location, self.branch)
-		self.assertEqual(cpv.cost_center, frappe.get_cached_value("Company", COMPANY, "cost_center"))
-		self.assertEqual(cpv.currency, frappe.get_cached_value("Company", COMPANY, "default_currency"))
+		self.assertEqual(cpv.cost_center, frappe.get_cached_value("Company", self.company, "cost_center"))
+		self.assertEqual(cpv.currency, frappe.get_cached_value("Company", self.company, "default_currency"))
 		self.assertEqual(cpv.auto_create_jv, 1)
 		self.assertFalse(cpv.mode_of_payment)
 		self.assertEqual(cpv.custom_leave_application, leave.name)
@@ -163,10 +172,15 @@ class TestBusinessTripCPV(IntegrationTestCase):
 		"""Charge To Employee with the employee set saves, also where Employee Clearance does not exist."""
 		leave = make_leave(self.employee, department=self.department)
 		cpv = bt.make_cpv_from_leave_application(leave.name)
+		if not cpv.total:
+			# no Travel Policy rate on this site (ToLeave): Finance enters the amount before saving
+			row = cpv.cash_payment_voucher_account[0]
+			row.net_amount = row.gross_amount = 500
 		cpv.insert()
 
 		self.assertEqual(cpv.cash_payment_voucher_account[0].employee, self.employee)
-		self.assertEqual(cpv.workflow_state, "Draft")
+		if get_workflow_name(bt.CPV):  # OMNI; ToLeave has no Cash Payment Voucher workflow
+			self.assertEqual(cpv.workflow_state, "Draft")
 		# the voucher's own before_save writes the title, as for the vouchers made by hand
 		self.assertTrue(cpv.custom_title.startswith(f"{cpv.total:,.2f} SAR - BT for {self.employee}"), cpv.custom_title)
 
@@ -188,11 +202,16 @@ class TestBusinessTripCPV(IntegrationTestCase):
 		approved = make_leave(self.employee, department=self.department)
 		self.assertEqual(bt.get_cpv_status(approved.name), {"can_create": True})
 
-		for values in (
+		not_ready = [
 			{"leave_type": "Annual Leave"},
 			{"docstatus": 0, "status": "Open", "workflow_state": "Draft"},
-			{"workflow_state": "Department Head Approved"},
-		):
+			{"status": "Rejected"},
+		]
+		if get_workflow_name("Leave Application"):
+			# approved status but the workflow is not through yet (OMNI)
+			not_ready.append({"workflow_state": "Department Head Approved"})
+
+		for values in not_ready:
 			leave = make_leave(self.employee, department=self.department, **values)
 			self.assertTrue(bt.get_create_errors(leave), values)
 			self.assertRaises(frappe.ValidationError, bt.make_cpv_from_leave_application, leave.name)
@@ -209,6 +228,11 @@ class TestBusinessTripCPV(IntegrationTestCase):
 
 		bt.make_cpv_from_leave_application(leave.name).insert()
 		self.assertRaises(frappe.ValidationError, bt.validate_leave_cancel, leave)
+
+	def test_missing_company_is_a_message(self):
+		# a clear validation message, not a TypeError
+		leave = make_leave(self.employee, department=self.department, company="_T-BT-No Such Company")
+		self.assertRaisesRegex(frappe.ValidationError, "was not found", bt.make_cpv_from_leave_application, leave.name)
 
 	def test_long_name_fits_row(self):
 		name = "Abdulrahman Mohammed Abdullah Saleh Al Qahtani Al Dosari Al Shammari"
@@ -230,7 +254,7 @@ def make_leave(employee, **values):
 			"name": f"_T-BT-LA-{frappe.generate_hash(length=6)}",
 			"employee": employee,
 			"employee_name": "Test Business Traveller",
-			"company": COMPANY,
+			"company": get_test_company(),
 			"leave_type": bt.BUSINESS_TRIP,
 			"from_date": FROM_DATE,
 			"to_date": TO_DATE,

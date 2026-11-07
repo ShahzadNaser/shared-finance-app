@@ -3,13 +3,16 @@
 
 """ISS-2026-00155: Payment Request (PWA) without a reference document.
 
-Documents are built in memory and only validated, so nothing is saved on the site.
+Documents are built in memory and only validated. Where the site has no submitted Purchase Invoice
+(ToLeave), a stand-in one is inserted and rolled back, so nothing stays on the site.
 """
 
 from unittest.mock import patch
 
 import frappe
+from erpnext.accounts.doctype.payment_request.payment_request import PaymentRequest
 from frappe.tests import IntegrationTestCase
+from frappe.utils import today
 
 EXISTING_AMOUNT = "erpnext.accounts.doctype.payment_request.payment_request.get_existing_payment_request_amount"
 
@@ -17,6 +20,8 @@ EXISTING_AMOUNT = "erpnext.accounts.doctype.payment_request.payment_request.get_
 class TestPaymentRequestReference(IntegrationTestCase):
 	def setUp(self):
 		frappe.set_user("Administrator")
+		frappe.db.savepoint("pr_reference_test")
+		self.addCleanup(frappe.db.rollback, save_point="pr_reference_test")
 		self.mode_of_payment = frappe.db.get_value("Mode of Payment", {"enabled": 1}, "name")
 		self.company = frappe.db.get_value("Company", {}, "name")
 
@@ -68,9 +73,30 @@ class TestPaymentRequestReference(IntegrationTestCase):
 			["name", "company", "supplier", "currency", "outstanding_amount"],
 			as_dict=1,
 		)
-		if not pi:
-			self.skipTest("No submitted Purchase Invoice with an outstanding amount")
-		return pi
+		return pi or self.make_stand_in_purchase_invoice()
+
+	def make_stand_in_purchase_invoice(self):
+		"""A submitted invoice with an outstanding amount, inserted without its own validations."""
+		currency = frappe.get_cached_value("Company", self.company, "default_currency") or "SAR"
+		pi = frappe.get_doc(
+			{
+				"doctype": "Purchase Invoice",
+				"name": f"_T-PR-PINV-{frappe.generate_hash(length=6)}",
+				"company": self.company,
+				"supplier": "_T-PR-Supplier",
+				"posting_date": today(),
+				"currency": currency,
+				"party_account_currency": currency,
+				"conversion_rate": 1,
+				"grand_total": 500,
+				"outstanding_amount": 500,
+				"docstatus": 1,
+			}
+		)
+		pi.db_insert()
+		return frappe._dict(
+			name=pi.name, company=pi.company, supplier=pi.supplier, currency=currency, outstanding_amount=500
+		)
 
 	def make_referenced_pr(self, pi, **kwargs):
 		values = {
@@ -87,6 +113,8 @@ class TestPaymentRequestReference(IntegrationTestCase):
 		return self.make_pr(**values)
 
 	def test_reference_runs_standard_checks(self):
+		if not hasattr(PaymentRequest, "validate_reference_company"):
+			self.skipTest("This ERPNext version has no reference company check (added in 16.52)")
 		pi = self.get_purchase_invoice()
 		pr = self.make_referenced_pr(pi, company="_Test Wrong Company")
 		self.assertRaisesRegex(frappe.ValidationError, "does not match the company", pr.validate)
