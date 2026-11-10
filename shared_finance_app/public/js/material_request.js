@@ -9,6 +9,9 @@ frappe.ui.form.on('Material Request', {
         }
         
         frm.set_query('custom_department', function() {
+            if (!frm.doc.company) {
+                frappe.throw(__("Please select Company first"));
+            }
             return {
                     filters: [
                         ['Department', 'is_group', '=', 0],
@@ -28,6 +31,10 @@ frappe.ui.form.on('Material Request', {
         return shared_finance_app.before_workflow_action(frm, {
             require_attachment: frm.doc.material_request_type === "Purchase",
         });
+    },
+    company: function(frm) {
+        // Department and Department Manager are company specific
+        frm.set_value({ custom_department: "", custom_department_manager: "" });
     },
     custom_department: function(frm) {
         if (shared_finance_app.can_update_dept_manager(frm)) {

@@ -73,6 +73,9 @@ frappe.ui.form.on('Payment Request', {
           }
           
           frm.set_query('custom_department', function() {
+               if (!frm.doc.company) {
+                    frappe.throw(__("Please select Company first"));
+               }
                return {
                     filters: [
                          ['Department', 'is_group', '=', 0],
@@ -82,6 +85,9 @@ frappe.ui.form.on('Payment Request', {
           });
 
           frm.set_query('cost_center', function() {
+               if (!frm.doc.company) {
+                    frappe.throw(__("Please select Company first"));
+               }
                return {
                     filters: [
                          ['Cost Center', 'is_group', '=', 0],
@@ -100,7 +106,20 @@ frappe.ui.form.on('Payment Request', {
           return shared_finance_app.before_workflow_action(frm, { require_attachment: true });
      },
      onload: function(frm) {
-          total_section_property(frm);   
+          total_section_property(frm);
+     },
+     company: function(frm) {
+          // Department, Department Manager and Cost Center are company specific
+          frm.set_value({
+               custom_department: "",
+               custom_department_manager: "",
+               cost_center: "",
+          });
+          // Party Account is company specific: re-fetch it for the new company
+          if (frm.doc.party) {
+               frm.set_value("party_account", "");
+               frm.trigger("party");
+          }
      },
      pay_to_party: function(frm) {
           total_section_property(frm);  
