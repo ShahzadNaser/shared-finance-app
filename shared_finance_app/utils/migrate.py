@@ -1,4 +1,5 @@
 import frappe
+from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 
 def after_migrate():
 
@@ -35,6 +36,13 @@ def after_migrate():
 
         # })
         # new_prop.insert(ignore_permissions=True, ignore_mandatory=True, ignore_if_duplicate=True)
+
+        # PWA is a standalone document (not created from a reference), so the user must be
+        # able to pick the Company; core ERPNext makes it read-only and not mandatory.
+        for prop, value in (("read_only", "0"), ("reqd", "1")):
+            make_property_setter(
+                "Payment Request", "company", prop, value, "Check", validate_fields_for_doctype=False
+            )
 
         frappe.db.set_value("DocType", "Payment Request", "in_create", 0)
         frappe.db.commit()
