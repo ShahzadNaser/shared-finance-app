@@ -17,6 +17,11 @@ frappe.ui.form.on('Payment Request', {
 			};
 		});
 
+          // Core makes Company read-only; PWA is standalone, so it must be selectable while
+          // in Draft (also set by a Property Setter in after_migrate, this is the fallback)
+          frm.set_df_property("company", "read_only", frm.doc.docstatus === 0 ? 0 : 1);
+          frm.set_df_property("company", "reqd", 1);
+
           frm.set_df_property("grand_total", "read_only", 0);
           if(frm.doc.pay_to_party === 0)
                frm.set_df_property("grand_total", "read_only", 1);
