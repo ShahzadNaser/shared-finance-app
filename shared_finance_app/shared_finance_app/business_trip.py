@@ -8,6 +8,10 @@ A Business Trip is a Leave Application with Leave Type "Business Trip". Once it 
 writes by hand (per diem from the omnieast Travel Policy). Finance reviews it and saves it; nothing
 is saved here.
 
+Per diem: Half Diem when the company books the hotel ("Hotel Booked by Company" = Yes), else Full
+Diem, paid per night away (to date - from date); a same-day trip is paid one diem.
+Car allowance: worked out on the leave (set_car_allowance) and paid as a second voucher row.
+
 The app is also installed on sites without omnieast (no Travel Policy, no BT fields on the leave),
 so every lookup checks that its DocType / field exists.
 """
@@ -24,6 +28,16 @@ APPROVED = "Approved"
 CPV = "Cash Payment Voucher"
 LINK_FIELD = "custom_leave_application"
 FULL_DIEM = "Full Diem"
+HALF_DIEM = "Half Diem"
+HOTEL_FIELD = "custom_hotel_required"  # omnieast: "Hotel Booked by Company" (Yes / No)
+# omnieast car allowance fields; rate and minimum distance in Omnieast Settings
+MODE_FIELD = "custom_mode_of_travel"
+VEHICLE_FIELD = "custom_company_vehicle_provided"
+KM_FIELD = "custom_one_way_distance_km"
+CAR_FIELD = "custom_car_allowance"
+BY_CAR = "By Car"
+SETTINGS = "Omnieast Settings"
+CAR_ALLOWANCE_DEFAULTS = {"car_allowance_rate": 0.5, "car_allowance_min_km": 200}  # the travel policy
 ROW_DESCRIPTION_LENGTH = 140  # Cash Payment Voucher Account.description is a Data field
 NAME_PARTICLES = {"al", "el", "bin", "bint", "abu"}
 
@@ -65,10 +79,20 @@ def make_cpv_from_leave_application(leave_application):
 	department = leave.department or employee.department
 	cost_center = get_cost_center(employee, department, leave.company) or company_cost_center
 	location = get_location(leave, employee)
-	days = date_diff(leave.to_date, leave.from_date) + 1
-	rate = get_per_diem_rate(leave.get("custom_grade") or employee.get("grade"), leave.get("custom_travel_type"))
-	total = flt(rate) * days
-	description = get_description(leave, days, rate)
+	grade = leave.get("custom_grade") or employee.get("grade")
+	travel_type = leave.get("custom_travel_type")
+	diem_type = get_diem_type(leave)
+	policy = get_travel_policy(grade, travel_type, diem_type)
+	basis = frappe._dict(
+		days=date_diff(leave.to_date, leave.from_date) + 1,
+		paid_days=get_paid_days(leave.from_date, leave.to_date),
+		rate=flt(policy.amount) if policy else 0,
+		diem_type=diem_type,
+	)
+	per_diem = basis.rate * basis.paid_days
+	description = get_description(leave, basis)
+	car_allowance = flt(leave.get(CAR_FIELD))
+	total = per_diem + car_allowance
 
 	cpv = frappe.new_doc(CPV)
 	cpv.update(
@@ -84,36 +108,54 @@ def make_cpv_from_leave_application(leave_application):
 			"currency": currency,
 			"auto_create_jv": 1,
 			"mode_of_payment": None,
-			"description": description,
+			"description": description
+			+ (_(" + car allowance {0} SR").format(format_amount(car_allowance)) if car_allowance else ""),
 			LINK_FIELD: leave.name,
 		}
 	)
+	row = {
+		"charge_to": "Employee",
+		"employee": leave.employee,
+		"vat_percent": 0,
+		"vat_amount": 0,
+		"cost_center": cost_center,
+		"department": department,
+		"branch": location,
+	}
 	cpv.append(
 		"cash_payment_voucher_account",
 		{
-			"charge_to": "Employee",
-			"employee": leave.employee,
-			"net_amount": total,
-			"gross_amount": total,
-			"vat_percent": 0,
-			"vat_amount": 0,
-			"description": get_row_description(leave, days, rate, description),
-			"cost_center": cost_center,
-			"department": department,
-			"branch": location,
+			**row,
+			"net_amount": per_diem,
+			"gross_amount": per_diem,
+			"description": get_row_description(leave, basis, description),
 		},
 	)
+	if car_allowance:
+		cpv.append(
+			"cash_payment_voucher_account",
+			{
+				**row,
+				"net_amount": car_allowance,
+				"gross_amount": car_allowance,
+				"description": get_car_allowance_description(leave, car_allowance),
+			},
+		)
 	cpv.total = cpv.net_amount = total
 	cpv.total_vat = 0
 
-	if not total:
+	if not per_diem:
+		if policy:
+			# the policy exists with 0, e.g. grades 0-4 have no Overseas per diem
+			message = _("Grade {0} is not eligible for per diem on {1} trips (Travel Policy {2}).").format(
+				frappe.bold(grade), frappe.bold(_(travel_type)), get_link_to_form("Travel Policy", policy.name)
+			)
+		else:
+			message = _("No per diem rate was found for this trip (grade {0}, {1}).").format(
+				frappe.bold(grade or _("not set")), frappe.bold(travel_type or _("travel type not set"))
+			)
 		frappe.msgprint(
-			_(
-				"No per diem rate was found for this trip (grade {0}, {1}). Please enter the amount on the voucher."
-			).format(
-				frappe.bold(leave.get("custom_grade") or employee.get("grade") or _("not set")),
-				frappe.bold(leave.get("custom_travel_type") or _("travel type not set")),
-			),
+			message + " " + _("The per diem row opens with 0; enter the amount if one applies."),
 			title=_("Enter the Amount"),
 			indicator="orange",
 		)
@@ -132,6 +174,8 @@ def get_create_errors(leave):
 		errors.append(_("Leave {0} is not a Business Trip.").format(leave.name))
 	if leave.docstatus != 1 or not is_approved(leave):
 		errors.append(_("Business Trip {0} is not approved yet.").format(leave.name))
+	if leave.leave_type == BUSINESS_TRIP and not get_diem_type(leave):
+		errors.append(_("Hotel Booked by Company (Yes / No) is not set on Business Trip {0}.").format(leave.name))
 
 	cpv = get_linked_cpv(leave.name)
 	if cpv:
@@ -211,24 +255,111 @@ def match_policy(policies, grade_number):
 	return None
 
 
-def get_per_diem_rate(grade, travel_type, policies=None):
-	"""Full Diem amount for the grade and travel type; 0 when there is no Travel Policy for it."""
+def get_diem_type(leave):
+	"""Half Diem when the company books the hotel, Full Diem when it does not; None while it is not set.
+
+	Sites without the omnieast field pay Full Diem."""
+	if not frappe.get_meta("Leave Application").has_field(HOTEL_FIELD):
+		return FULL_DIEM
+	return {"Yes": HALF_DIEM, "No": FULL_DIEM}.get(leave.get(HOTEL_FIELD))
+
+
+def get_paid_days(from_date, to_date):
+	"""Per diem is paid per night away; a same-day trip is paid one diem."""
+	return max(date_diff(to_date, from_date), 1)
+
+
+def get_travel_policy(grade, travel_type, diem_type=FULL_DIEM, policies=None):
+	"""The Travel Policy row for the grade, travel type and diem type; None when there is none."""
 	grade_number = parse_grade(grade)
-	if grade_number is None or not travel_type:
-		return 0
+	if grade_number is None or not travel_type or not diem_type:
+		return None
 
 	if policies is None:
 		if not frappe.db.exists("DocType", "Travel Policy"):
-			return 0
+			return None
 		policies = frappe.get_all(
 			"Travel Policy",
-			filters={"travel_type": travel_type, "diem_type": FULL_DIEM},
-			fields=["min_grade", "max_grade", "amount"],
+			filters={"travel_type": travel_type, "diem_type": diem_type},
+			fields=["name", "min_grade", "max_grade", "amount"],
 			order_by="name asc",
 		)
 
-	policy = match_policy(policies, grade_number)
+	return match_policy(policies, grade_number)
+
+
+def get_per_diem_rate(grade, travel_type, diem_type=FULL_DIEM, policies=None):
+	"""Per diem amount for the grade, travel type and diem type; 0 when there is no Travel Policy for it."""
+	policy = get_travel_policy(grade, travel_type, diem_type, policies)
 	return flt(policy.get("amount")) if policy else 0
+
+
+# Car allowance
+# -------------
+
+
+def get_car_allowance_settings():
+	"""Rate per km and minimum one-way distance from Omnieast Settings; the policy values when not set."""
+	values = {}
+	for field, default in CAR_ALLOWANCE_DEFAULTS.items():
+		value = None
+		if frappe.db.exists("DocType", SETTINGS):
+			value = frappe.db.get_value("Singles", {"doctype": SETTINGS, "field": field}, "value", order_by=None)
+		values[field] = flt(value) if value not in (None, "") else default
+	return frappe._dict(rate=values["car_allowance_rate"], min_km=values["car_allowance_min_km"])
+
+
+def calculate_car_allowance(mode_of_travel, company_vehicle, one_way_km, settings=None):
+	"""(amount, why) for a Business Trip.
+
+	Paid when the employee travels by car (no flight), the company does not provide the vehicle and
+	the one-way distance is more than the minimum: one-way km × rate."""
+	settings = settings or get_car_allowance_settings()
+	km = flt(one_way_km)
+
+	if mode_of_travel != BY_CAR:
+		return 0, _("Car allowance is paid only for trips by car.")
+	if company_vehicle == "Yes":
+		return 0, _("No car allowance: the company provides the vehicle.")
+	if company_vehicle != "No":
+		return 0, _("Set Company Vehicle Provided.")
+	if km <= settings.min_km:
+		return 0, _("No car allowance: it is paid only when the one-way distance is more than {0} km.").format(
+			format_amount(settings.min_km)
+		)
+
+	amount = flt(km * settings.rate, 2)
+	return amount, _("{0} km one way × {1} SR = {2} SR").format(
+		format_amount(km), format_amount(settings.rate), format_amount(amount)
+	)
+
+
+@frappe.whitelist()
+def get_car_allowance(mode_of_travel=None, company_vehicle=None, one_way_km=None):
+	"""For the Leave Application form: the amount and why, while the trip is being filled in."""
+	amount, note = calculate_car_allowance(mode_of_travel, company_vehicle, one_way_km)
+	return {"amount": amount, "note": note}
+
+
+def set_car_allowance(doc, method=None):
+	"""Leave Application validate: the Car Allowance follows the trip (omnieast fields)."""
+	if not frappe.get_meta("Leave Application").has_field(CAR_FIELD):
+		return
+
+	amount = 0
+	if doc.leave_type == BUSINESS_TRIP:
+		amount = calculate_car_allowance(doc.get(MODE_FIELD), doc.get(VEHICLE_FIELD), doc.get(KM_FIELD))[0]
+	doc.set(CAR_FIELD, amount)
+
+
+def get_car_allowance_description(leave, amount):
+	"""The voucher row for the car allowance: distance and the rate it was worked out with."""
+	km = flt(leave.get(KM_FIELD))
+	if not km:
+		return _("Car allowance - Business Trip {0}").format(leave.name)
+	return _("Car allowance - {0} km one way × {1} SR (Business Trip {2})").format(
+		format_amount(km), format_amount(amount / km), leave.name
+	)
 
 
 # Header values
@@ -262,32 +393,37 @@ def get_location(leave, employee):
 	return None
 
 
-def get_description(leave, days, rate, employee_name=None):
-	"""Same wording as the BT vouchers Finance writes by hand."""
-	nights = days - 1
+def get_description(leave, basis, employee_name=None):
+	"""Same wording as the BT vouchers Finance writes by hand, with the per diem basis.
+
+	basis: days (calendar), paid_days, rate, diem_type."""
+	nights = basis.days - 1
+	diem = _("Half Diem - hotel by company") if basis.diem_type == HALF_DIEM else _("Full Diem")
 	return _(
-		"BT for {employee} {employee_name} - {days} {days_label} ({nights} {nights_label}) from {from_date} to {to_date} ({days} per diem × {rate} SR)"
+		"BT for {employee} {employee_name} - {days} {days_label} ({nights} {nights_label}) from {from_date} to {to_date} ({paid_days} × {rate} SR {diem})"
 	).format(
 		employee=leave.employee,
 		employee_name=employee_name or leave.employee_name or "",
-		days=days,
-		days_label=_("days") if days != 1 else _("day"),
+		days=basis.days,
+		days_label=_("days") if basis.days != 1 else _("day"),
 		nights=nights,
 		nights_label=_("nights") if nights != 1 else _("night"),
 		from_date=getdate(leave.from_date).strftime("%d-%m-%Y"),
 		to_date=getdate(leave.to_date).strftime("%d-%m-%Y"),
-		rate=format_amount(rate),
+		paid_days=basis.paid_days,
+		rate=format_amount(basis.rate),
+		diem=diem,
 	)
 
 
-def get_row_description(leave, days, rate, description):
+def get_row_description(leave, basis, description):
 	"""The row's Remarks hold 140 characters: shorten a long name (first and last word) before cutting."""
 	if len(description) > ROW_DESCRIPTION_LENGTH:
 		words = (leave.employee_name or "").split()
 		if len(words) > 2:
 			# keep the family name's particle: "Abdulrahman ... Al Shammari" -> "Abdulrahman Al Shammari"
 			last = words[-2:] if words[-2].lower() in NAME_PARTICLES and len(words) > 3 else words[-1:]
-			description = get_description(leave, days, rate, employee_name=" ".join([words[0], *last]))
+			description = get_description(leave, basis, employee_name=" ".join([words[0], *last]))
 
 	if len(description) > ROW_DESCRIPTION_LENGTH:
 		description = description[: ROW_DESCRIPTION_LENGTH - 1] + "…"

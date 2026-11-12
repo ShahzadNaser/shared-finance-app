@@ -9,6 +9,38 @@ frappe.ui.form.on("Leave Application", {
         }
 
         frm.trigger("business_trip_cpv_button");
+        if (frm.doc.leave_type === "Business Trip" && frm.doc.custom_mode_of_travel === "By Car") {
+            frm.trigger("business_trip_car_allowance");
+        }
+    },
+
+    // Business Trip car allowance: shown while the trip is filled in; the server works it out again on save
+    leave_type: (frm) => frm.trigger("business_trip_car_allowance"),
+    custom_mode_of_travel: (frm) => frm.trigger("business_trip_car_allowance"),
+    custom_company_vehicle_provided: (frm) => frm.trigger("business_trip_car_allowance"),
+    custom_one_way_distance_km: (frm) => frm.trigger("business_trip_car_allowance"),
+
+    business_trip_car_allowance: async function(frm) {
+        if (!frm.fields_dict.custom_car_allowance || frm.doc.docstatus !== 0) return;
+        if (frm.doc.leave_type !== "Business Trip") {
+            if (frm.doc.custom_car_allowance) frm.set_value("custom_car_allowance", 0);
+            return;
+        }
+
+        const { message } = await frappe.call({
+            method: "shared_finance_app.shared_finance_app.business_trip.get_car_allowance",
+            args: {
+                mode_of_travel: frm.doc.custom_mode_of_travel,
+                company_vehicle: frm.doc.custom_company_vehicle_provided,
+                one_way_km: frm.doc.custom_one_way_distance_km,
+            },
+        });
+        if (!message) return;
+
+        if (flt(frm.doc.custom_car_allowance) !== flt(message.amount)) {
+            frm.set_value("custom_car_allowance", message.amount);
+        }
+        frm.set_df_property("custom_car_allowance", "description", message.note);
     },
 
     // Cash Payment Voucher for an approved Business Trip

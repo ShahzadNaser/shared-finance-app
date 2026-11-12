@@ -5,7 +5,11 @@
  "engine": "InnoDB",
  "field_order": [
   "zatca_section",
-  "pass_zatca"
+  "pass_zatca",
+  "business_trip_section",
+  "car_allowance_rate",
+  "column_break_bt",
+  "car_allowance_min_km"
  ],
  "fields": [
   {
@@ -19,10 +23,37 @@
    "fieldtype": "Check",
    "label": "Pass ZATCA",
    "description": "If enabled, ZATCA validation errors will be skipped on Sales Invoice submission"
+  },
+  {
+   "fieldname": "business_trip_section",
+   "fieldtype": "Section Break",
+   "label": "Business Trip"
+  },
+  {
+   "default": "0.5",
+   "fieldname": "car_allowance_rate",
+   "fieldtype": "Float",
+   "label": "Car Allowance Rate (per km)",
+   "non_negative": 1,
+   "precision": "2",
+   "description": "Paid per km of the one-way distance when the employee drives their own car on a Business Trip."
+  },
+  {
+   "fieldname": "column_break_bt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "200",
+   "fieldname": "car_allowance_min_km",
+   "fieldtype": "Float",
+   "label": "Car Allowance Minimum Distance (km)",
+   "non_negative": 1,
+   "precision": "1",
+   "description": "Car allowance is paid only when the one-way distance is more than this."
   }
  ],
  "issingle": 1,
- "modified": "2026-04-20 00:00:00.000000",
+ "modified": "2026-11-12 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Shared Finance App",
  "name": "Omnieast Settings",

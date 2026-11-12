@@ -108,6 +108,8 @@ doc_events = {
     },
     #a Business Trip cannot be cancelled while its Cash Payment Voucher is in progress
     "Leave Application": {
+        # Business Trip car allowance (omnieast fields; rate in Omnieast Settings)
+        "validate": "shared_finance_app.shared_finance_app.business_trip.set_car_allowance",
         "before_cancel": "shared_finance_app.shared_finance_app.business_trip.validate_leave_cancel",
     },
 }
